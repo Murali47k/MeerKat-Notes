@@ -12,7 +12,7 @@ const notebooks = defineCollection({
     level: z.string().default('Beginner'),
     category: z.string().default('Machine Learning'),
     type: z.string().default('Notebook'),
-    author: z.string().default('MeerKat47'),
+    author: z.string().default('Murali'),
     tags: z.array(z.string()).default([]),
     chapters: z.array(z.string()).optional(),
   }),
