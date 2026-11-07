@@ -1,0 +1,67 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Knowledge Base — Mathematics behind ML",
+  description = "Interactive machine learning notes, mathematical equations & animations.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body class="min-h-screen bg-[#f8faff] text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <!-- Top Minimal Navigation - Blue & White Theme -->
+    <header class="border-b border-blue-100 bg-white/85 backdrop-blur-md sticky top-0 z-40">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2.5 group">
+          <div class="w-7 h-7 rounded-lg bg-blue-600 text-white font-mono text-xs font-bold flex items-center justify-center shadow-xs group-hover:bg-blue-700 transition-colors">
+            M
+          </div>
+          <span class="font-mono text-xs tracking-wider uppercase text-slate-600 font-semibold group-hover:text-blue-600 transition-colors">
+            MeerKat47 <span class="text-blue-300">/</span> Notes
+          </span>
+        </a>
+
+        <div class="flex items-center gap-5 text-xs font-mono">
+          <a href="/notebooks" class="text-slate-600 hover:text-blue-600 transition-colors font-medium">
+            Notebook
+          </a>
+          <a
+            href="https://github.com/Murali47k/MeerKat47-Notes"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-blue-600 hover:text-blue-800 transition-colors font-medium"
+          >
+            GitHub
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Body -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-blue-100 py-8 bg-white text-xs font-mono text-slate-400">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p>© {new Date().getFullYear()} MeerKat47 Notes · Mathematics behind ML Algorithms</p>
+        <p class="text-blue-600 font-medium">Astro · MDX · React · Manim</p>
+      </div>
+    </footer>
+  </body>
+</html>

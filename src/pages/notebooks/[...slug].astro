@@ -1,0 +1,68 @@
+---
+import { getAllNotebooks, getChapterDetails, type NotebookItem, type ChapterItem } from '../../utils/content';
+import NotebookLayout from '../../layouts/NotebookLayout.astro';
+import ChapterLayout from '../../layouts/ChapterLayout.astro';
+import { render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const notebooks = await getAllNotebooks();
+  const paths: any[] = [];
+
+  for (const nb of notebooks) {
+    // 1. Notebook overview route: /notebooks/[notebookSlug]
+    paths.push({
+      params: { slug: nb.slug },
+      props: {
+        kind: 'notebook',
+        notebook: nb,
+      },
+    });
+
+    // 2. Individual chapter routes: /notebooks/[notebookSlug]/[chapterSlug]
+    for (const chap of nb.chapters) {
+      paths.push({
+        params: { slug: `${nb.slug}/${chap.chapterSlug}` },
+        props: {
+          kind: 'chapter',
+          notebookSlug: nb.slug,
+          chapterSlug: chap.chapterSlug,
+        },
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { kind } = Astro.props;
+
+let notebook: NotebookItem | undefined;
+let chapterDetails: any = null;
+let RenderedContent: any = null;
+
+if (kind === 'notebook') {
+  notebook = Astro.props.notebook;
+} else if (kind === 'chapter') {
+  const { notebookSlug, chapterSlug } = Astro.props;
+  chapterDetails = await getChapterDetails(notebookSlug, chapterSlug);
+  if (chapterDetails) {
+    const { Content } = await render(chapterDetails.chapter.entry);
+    RenderedContent = Content;
+  }
+}
+---
+
+{kind === 'notebook' && notebook && (
+  <NotebookLayout notebook={notebook} />
+)}
+
+{kind === 'chapter' && chapterDetails && RenderedContent && (
+  <ChapterLayout
+    notebook={chapterDetails.notebook}
+    chapter={chapterDetails.chapter}
+    prevChapter={chapterDetails.prevChapter}
+    nextChapter={chapterDetails.nextChapter}
+  >
+    <RenderedContent />
+  </ChapterLayout>
+)}

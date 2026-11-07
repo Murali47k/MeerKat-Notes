@@ -1,0 +1,12 @@
+{
+  "title": "Mathematics behind ML Algorithms",
+  "description": "Understanding the mathematical foundations, derivations, and intuitions behind fundamental machine learning algorithms.",
+  "level": "Beginner",
+  "category": "Machine Learning",
+  "type": "Notebook",
+  "author": "MeerKat47",
+  "tags": [],
+  "chapters": [
+    "01-linear-regression"
+  ]
+}

@@ -1,0 +1,105 @@
+---
+import MainLayout from './MainLayout.astro';
+import type { NotebookItem, ChapterItem } from '../utils/content';
+
+interface Props {
+  notebook: NotebookItem;
+  chapter: ChapterItem;
+  prevChapter: ChapterItem | null;
+  nextChapter: ChapterItem | null;
+}
+
+const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
+---
+
+<MainLayout
+  title={`${chapter.title} — ${notebook.title}`}
+  description={chapter.description || notebook.description}
+>
+  <article class="space-y-10">
+    <!-- Breadcrumbs -->
+    <nav class="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-500">
+      <a href="/" class="hover:text-blue-600 transition-colors">Catalog</a>
+      <span class="text-blue-300">/</span>
+      <a href={`/notebooks/${notebook.slug}`} class="hover:text-blue-600 transition-colors truncate max-w-[220px]">
+        {notebook.title}
+      </a>
+      <span class="text-blue-300">/</span>
+      <span class="text-blue-900 font-medium">Chapter {chapter.order}</span>
+    </nav>
+
+    <!-- Chapter Header (Blue & White) -->
+    <header class="bg-white border border-blue-100 p-6 sm:p-8 rounded-2xl shadow-xs">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="font-mono text-[11px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md font-semibold">
+          Chapter {String(chapter.order).padStart(2, '0')}
+        </span>
+        <span class="font-mono text-[11px] text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
+          ⏱ {chapter.readingTime} min read
+        </span>
+      </div>
+
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+        {chapter.title}
+      </h1>
+
+      {chapter.description && (
+        <p class="mt-3 text-base text-slate-600 leading-relaxed font-sans">
+          {chapter.description}
+        </p>
+      )}
+    </header>
+
+    <!-- Chapter Content Body -->
+    <div class="prose prose-slate max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-h2:text-2xl prose-h2:text-slate-900 prose-h2:border-b prose-h2:border-blue-100 prose-h2:pb-2 prose-h2:mt-10 prose-h3:text-xl prose-h3:text-slate-900 prose-p:leading-relaxed prose-p:text-slate-700 prose-a:text-blue-600 prose-code:font-mono prose-code:text-xs prose-code:bg-blue-50 prose-code:text-blue-900 prose-code:border prose-code:border-blue-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
+      <slot />
+    </div>
+
+    <!-- Chapter Navigation Footer -->
+    <footer class="pt-10 border-t border-blue-100">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {prevChapter ? (
+          <a
+            href={prevChapter.url}
+            class="group block p-5 rounded-xl border border-blue-100 bg-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-left"
+          >
+            <span class="block text-[11px] font-mono text-slate-400 group-hover:text-blue-600">
+              ← PREVIOUS CHAPTER
+            </span>
+            <span class="font-mono text-sm font-semibold text-slate-900 group-hover:text-blue-600 mt-1 block">
+              {prevChapter.title}
+            </span>
+          </a>
+        ) : (
+          <div class="hidden sm:block"></div>
+        )}
+
+        {nextChapter ? (
+          <a
+            href={nextChapter.url}
+            class="group block p-5 rounded-xl border border-blue-100 bg-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-right sm:col-start-2"
+          >
+            <span class="block text-[11px] font-mono text-slate-400 group-hover:text-blue-600">
+              NEXT CHAPTER →
+            </span>
+            <span class="font-mono text-sm font-semibold text-slate-900 group-hover:text-blue-600 mt-1 block">
+              {nextChapter.title}
+            </span>
+          </a>
+        ) : (
+          <a
+            href={`/notebooks/${notebook.slug}`}
+            class="group block p-5 rounded-xl border border-blue-100 bg-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-right sm:col-start-2"
+          >
+            <span class="block text-[11px] font-mono text-blue-600 group-hover:text-blue-700 font-semibold">
+              NOTEBOOK OVERVIEW
+            </span>
+            <span class="font-mono text-sm font-semibold text-slate-900 group-hover:text-blue-600 mt-1 block">
+              Back to Curriculum →
+            </span>
+          </a>
+        )}
+      </div>
+    </footer>
+  </article>
+</MainLayout>

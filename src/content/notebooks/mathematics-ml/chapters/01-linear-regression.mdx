@@ -1,0 +1,165 @@
+---
+title: Linear Regression
+description: Understanding linear regression mathematically, geometrically, and algorithmically with interactive simulations.
+order: 1
+readingTime: 15
+---
+
+import RegressionPlot from '../../../../components/Interactive/RegressionPlot.tsx';
+import GradientDescentPlot from '../../../../components/Interactive/GradientDescentPlot.tsx';
+import ManimPlayer from '../../../../components/ManimPlayer.astro';
+import Equation from '../../../../components/Equation.astro';
+import CodeExample from '../../../../components/CodeExample.astro';
+import Exercise from '../../../../components/Exercise.astro';
+
+## 1. Intuition & Conceptual Overview
+
+Linear regression is one of the foundational algorithms in supervised machine learning. Given a dataset of paired observations $(x_1, y_1), (x_2, y_2), \dots, (x_m, y_m)$, our objective is to learn a linear mapping that predicts a continuous target variable $\hat{y}$ from an input feature $x$.
+
+Geometrically, in two dimensions, this corresponds to fitting the **optimal straight line** through a cloud of data points such that the overall discrepancy between the observed values $y$ and the predicted values $\hat{y}$ is minimized.
+
+---
+
+## 2. Mathematical Formulation
+
+### The Hypothesis Function
+
+The model represents predictions using a linear combination of input features parameterized by weights:
+
+$$\hat{y} = h_\theta(x) = b_0 + b_1 x$$
+
+Where:
+- $b_0$ is the **intercept** (bias term), determining where the line intercepts the vertical axis when $x = 0$.
+- $b_1$ is the **slope** (weight parameter), representing the rate of change of $y$ per unit increase in $x$.
+
+### The Objective: Mean Squared Error (MSE)
+
+To measure how well a candidate line fits our observed data, we quantify the error across all $m$ training samples using the **Mean Squared Error (MSE)** cost function:
+
+$$J(b_0, b_1) = \frac{1}{2m} \sum_{i=1}^{m} \left( \hat{y}^{(i)} - y^{(i)} \right)^2 = \frac{1}{2m} \sum_{i=1}^{m} \left( (b_0 + b_1 x^{(i)}) - y^{(i)} \right)^2$$
+
+> **Why square the errors?**
+> 1. Squaring prevents positive and negative errors from canceling each other out.
+> 2. It heavily penalizes large outliers.
+> 3. Mathematically, $J(b_0, b_1)$ is a convex paraboloid, guaranteeing a single unique global minimum with zero local minima!
+
+---
+
+## 3. Interactive Visualization: Fitting the Line
+
+Experiment with the interactive tool below. Drag the **Slope ($b_1$)** and **Intercept ($b_0$)** sliders to observe how the residual error bars (shown in dashed red) shrink as the line approaches the optimal Ordinary Least Squares (OLS) fit. Click anywhere inside the canvas to add new custom observations!
+
+<RegressionPlot client:visible />
+
+Notice how minimizing the length of all red dashed residual lines simultaneously drives the Mean Squared Error down to its global minimum.
+
+---
+
+## 4. Mathematical Animation: Gradient Descent in Action
+
+Watch the mathematical animation below rendered using **Manim** (Python Mathematical Animation Engine). It illustrates how gradient descent iteratively updates parameters to glide down the convex loss surface $J(w)$ toward the optimal line fit:
+
+<ManimPlayer
+  src="/animations/linear-regression/gradient-descent.mp4"
+  title="Gradient Descent Convergence & Loss Landscape"
+  caption="Left: Iterative line adjustment minimizing residuals. Right: Trajectory down the convex parabolic cost surface J(w)."
+/>
+
+---
+
+## 5. Analytical Derivation: Ordinary Least Squares (OLS)
+
+Unlike iterative algorithms, simple linear regression possesses an exact closed-form solution obtained by setting partial derivatives of the cost function to zero:
+
+$$\frac{\partial J}{\partial b_0} = 0 \quad \text{and} \quad \frac{\partial J}{\partial b_1} = 0$$
+
+Solving this linear system gives the standard Normal Equations:
+
+$$b_1^* = \frac{\sum_{i=1}^{m} (x^{(i)} - \bar{x})(y^{(i)} - \bar{y})}{\sum_{i=1}^{m} (x^{(i)} - \bar{x})^2} = \frac{\operatorname{Cov}(x, y)}{\operatorname{Var}(x)}$$
+
+$$b_0^* = \bar{y} - b_1^* \bar{x}$$
+
+Where $\bar{x} = \frac{1}{m}\sum x^{(i)}$ and $\bar{y} = \frac{1}{m}\sum y^{(i)}$ are the sample means.
+
+---
+
+## 6. Optimization via Gradient Descent
+
+When scaling to datasets with millions of samples or thousands of features, computing the closed-form inverse becomes computationally expensive ($O(d^3)$). Instead, we apply **Gradient Descent**:
+
+$$b_j := b_j - \alpha \frac{\partial J}{\partial b_j}$$
+
+Evaluating the partial derivatives:
+
+$$\frac{\partial J}{\partial b_0} = \frac{1}{m} \sum_{i=1}^{m} (\hat{y}^{(i)} - y^{(i)})$$
+
+$$\frac{\partial J}{\partial b_1} = \frac{1}{m} \sum_{i=1}^{m} (\hat{y}^{(i)} - y^{(i)}) \cdot x^{(i)}$$
+
+### Interactive Parameter Optimization
+
+Step through the gradient updates below to see the learning rate $\alpha$ effect:
+
+<GradientDescentPlot client:visible />
+
+---
+
+## 7. Python Implementation from Scratch
+
+Here is a clean, vectorized implementation using NumPy:
+
+<CodeExample title="linear_regression_scratch.py" language="python">
+
+```python
+import numpy as np
+
+class LinearRegression:
+    def __init__(self, learning_rate: float = 0.01, n_iterations: int = 1000):
+        self.lr = learning_rate
+        self.n_iters = n_iterations
+        self.weights = None
+        self.bias = None
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        n_samples, n_features = X.shape
+        self.weights = np.zeros(n_features)
+        self.bias = 0.0
+
+        for _ in range(self.n_iters):
+            # 1. Forward prediction: y_hat = Xw + b
+            y_predicted = np.dot(X, self.weights) + self.bias
+
+            # 2. Compute gradients
+            dw = (1 / n_samples) * np.dot(X.T, (y_predicted - y))
+            db = (1 / n_samples) * np.sum(y_predicted - y)
+
+            # 3. Update parameters
+            self.weights -= self.lr * dw
+            self.bias -= self.lr * db
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        return np.dot(X, self.weights) + self.bias
+```
+
+</CodeExample>
+
+---
+
+## 8. Checkpoint Exercises
+
+<Exercise
+  question="Why does standard Mean Squared Error use 1/(2m) instead of 1/m?"
+  hint="Think about what happens when you compute the derivative d/dx (x^2)."
+  points={10}
+>
+  <div slot="question">
+    In many machine learning textbooks, the cost function is written with a $\frac{1}{2m}$ factor rather than $\frac{1}{m}$. What is the mathematical motivation for the factor of $2$ in the denominator?
+  </div>
+
+  <div slot="solution">
+    When differentiating the squared term $(h_\theta(x) - y)^2$ using the power rule, the derivative brings down an exponent of $2$:
+    
+    $$\frac{d}{dz} \frac{1}{2} z^2 = z$$
+    
+    The $\frac{1}{2}$ constant cleanly cancels out the $2$ resulting from the derivative, simplifying the gradient update equations to $\frac{1}{m}\sum(\hat{y} - y)x$. Because multiplying a function by a positive constant does not change the location of its minimum, the resulting optimal parameters are identical.
+  </div>
+</Exercise>

@@ -1,0 +1,39 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import CatalogSearch from '../components/CatalogSearch.tsx';
+import { getAllNotebooks } from '../utils/content';
+
+const notebooks = await getAllNotebooks();
+
+const notes = notebooks.map((nb) => ({
+  id: nb.id,
+  slug: nb.slug,
+  title: nb.title,
+  description: nb.description,
+  type: nb.type,
+  author: nb.author,
+  chaptersCount: nb.chapters.length,
+  url: `/notebooks/${nb.slug}`,
+  level: nb.level,
+}));
+---
+
+<MainLayout title="My Notes — Mathematics behind ML Algorithms">
+  <div class="max-w-3xl mx-auto pt-4 sm:pt-8">
+    <!-- Header: Blue & White Palette -->
+    <div class="mb-8">
+      <span class="font-mono text-xs tracking-widest uppercase text-blue-600 font-semibold block mb-2">
+        KNOWLEDGE BASE
+      </span>
+      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-slate-900">
+        My <span class="font-serif italic font-light text-blue-600">Notes</span>
+      </h1>
+      <p class="font-mono text-xs sm:text-[13px] text-slate-500 mt-2">
+        Interactive technical notebook, mathematical derivations &amp; conceptual animations.
+      </p>
+    </div>
+
+    <!-- Search and Note Catalogue Filter -->
+    <CatalogSearch client:load initialNotes={notes} />
+  </div>
+</MainLayout>

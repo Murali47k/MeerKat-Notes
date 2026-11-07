@@ -1,0 +1,35 @@
+---
+import katex from 'katex';
+
+interface Props {
+  latex?: string;
+  label?: string;
+  title?: string;
+}
+
+const { latex = '', label, title } = Astro.props;
+
+let html = '';
+if (latex) {
+  try {
+    html = katex.renderToString(latex, {
+      displayMode: true,
+      throwOnError: false,
+    });
+  } catch (e) {
+    html = latex;
+  }
+}
+---
+
+<div class="my-6 rounded-2xl border border-blue-100 bg-white p-5 shadow-xs">
+  {(title || label) && (
+    <div class="flex items-center justify-between pb-2 mb-2 border-b border-blue-50 text-xs font-mono text-slate-500">
+      <span class="font-semibold text-slate-700">{title}</span>
+      {label && <span class="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-medium">{label}</span>}
+    </div>
+  )}
+  <div class="overflow-x-auto py-2 text-center text-slate-900">
+    {html ? <Fragment set:html={html} /> : <slot />}
+  </div>
+</div>
