@@ -16,57 +16,87 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
   title={`${chapter.title} — ${notebook.title}`}
   description={chapter.description || notebook.description}
 >
-  <article class="space-y-10">
-    <!-- Breadcrumbs -->
+  <!-- Reading Progress Bar -->
+  <div
+    id="reading-progress"
+    class="fixed top-0 left-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 z-50 transition-all duration-75"
+    style="width: 0%"
+  ></div>
+
+  <article class="space-y-8">
+    <!-- Breadcrumbs Navigation -->
     <nav class="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-500">
-      <a href="/" class="hover:text-blue-600 transition-colors">Catalog</a>
-      <span class="text-blue-300">/</span>
-      <a href={`/notebooks/${notebook.slug}`} class="hover:text-blue-600 transition-colors truncate max-w-[220px]">
+      <a href="/" class="hover:text-blue-600 transition-colors flex items-center gap-1">
+        <span>←</span> Catalog
+      </a>
+      <span class="text-slate-300">/</span>
+      <a href={`/notebooks/${notebook.slug}`} class="hover:text-blue-600 transition-colors truncate max-w-[240px]">
         {notebook.title}
       </a>
-      <span class="text-blue-300">/</span>
-      <span class="text-blue-900 font-medium">Chapter {chapter.order}</span>
+      <span class="text-slate-300">/</span>
+      <span class="text-blue-600 font-semibold">Chapter {chapter.order}</span>
     </nav>
 
-    <!-- Chapter Header (Blue & White) -->
-    <header class="bg-white border border-blue-100 p-6 sm:p-8 rounded-2xl shadow-xs">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="font-mono text-[11px] uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md font-semibold">
-          Chapter {String(chapter.order).padStart(2, '0')}
-        </span>
-        <span class="font-mono text-[11px] text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
-          ⏱ {chapter.readingTime} min read
-        </span>
+    <!-- Chapter Hero Card -->
+    <header class="relative bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
+      <!-- Gradient accent strip -->
+      <div class="h-1.5 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-400"></div>
+
+      <div class="p-7 sm:p-9">
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          <span class="font-mono text-xs uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200/80 px-3 py-1 rounded-md font-bold">
+            Chapter {String(chapter.order).padStart(2, '0')}
+          </span>
+          <span class="font-mono text-xs text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1 rounded-md font-medium">
+            ⏱ {chapter.readingTime} min read
+          </span>
+          <span class="font-mono text-xs text-indigo-700 bg-indigo-50 border border-indigo-200/70 px-3 py-1 rounded-md font-medium">
+            Supervised Learning
+          </span>
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+          {chapter.title}
+        </h1>
+
+        {chapter.description && (
+          <p class="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed font-sans max-w-3xl">
+            {chapter.description}
+          </p>
+        )}
+
+        <!-- Quick Jump Navigation Pills -->
+        <div class="mt-7 pt-5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs font-mono text-slate-500 scrollbar-none">
+          <span class="text-blue-700 font-bold uppercase tracking-wider text-[11px] shrink-0">Sections:</span>
+          <a href="#1-intuition--conceptual-overview" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">1. Intuition</a>
+          <a href="#2-mathematical-formulation" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">2. Formulation</a>
+          <a href="#3-interactive-visualization-fitting-the-line" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">3. Interactive Fit</a>
+          <a href="#4-mathematical-animation-gradient-descent-in-action" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">4. Manim Video</a>
+          <a href="#5-analytical-derivation-ordinary-least-squares-ols" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">5. OLS Derivation</a>
+          <a href="#6-optimization-via-gradient-descent" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">6. Optimization</a>
+          <a href="#7-python-implementation-from-scratch" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">7. Code</a>
+          <a href="#8-checkpoint-exercises" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">8. Exercises</a>
+        </div>
       </div>
-
-      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
-        {chapter.title}
-      </h1>
-
-      {chapter.description && (
-        <p class="mt-3 text-base text-slate-600 leading-relaxed font-sans">
-          {chapter.description}
-        </p>
-      )}
     </header>
 
-    <!-- Chapter Content Body -->
-    <div class="prose prose-slate max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-h2:text-2xl prose-h2:text-slate-900 prose-h2:border-b prose-h2:border-blue-100 prose-h2:pb-2 prose-h2:mt-10 prose-h3:text-xl prose-h3:text-slate-900 prose-p:leading-relaxed prose-p:text-slate-700 prose-a:text-blue-600 prose-code:font-mono prose-code:text-xs prose-code:bg-blue-50 prose-code:text-blue-900 prose-code:border prose-code:border-blue-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
+    <!-- Chapter Content Body with dedicated prose-notes class -->
+    <div class="prose-notes max-w-none">
       <slot />
     </div>
 
     <!-- Chapter Navigation Footer -->
-    <footer class="pt-10 border-t border-blue-100">
+    <footer class="pt-12 border-t border-slate-200">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {prevChapter ? (
           <a
             href={prevChapter.url}
-            class="group block p-5 rounded-xl border border-blue-100 bg-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-left"
+            class="group block p-5 rounded-2xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-left"
           >
-            <span class="block text-[11px] font-mono text-slate-400 group-hover:text-blue-600">
+            <span class="block text-[11px] font-mono text-slate-400 group-hover:text-blue-600 font-semibold tracking-wider">
               ← PREVIOUS CHAPTER
             </span>
-            <span class="font-mono text-sm font-semibold text-slate-900 group-hover:text-blue-600 mt-1 block">
+            <span class="font-mono text-base font-bold text-slate-900 group-hover:text-blue-600 mt-1 block">
               {prevChapter.title}
             </span>
           </a>
@@ -77,29 +107,41 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
         {nextChapter ? (
           <a
             href={nextChapter.url}
-            class="group block p-5 rounded-xl border border-blue-100 bg-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-right sm:col-start-2"
+            class="group block p-5 rounded-2xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-right sm:col-start-2"
           >
-            <span class="block text-[11px] font-mono text-slate-400 group-hover:text-blue-600">
+            <span class="block text-[11px] font-mono text-slate-400 group-hover:text-blue-600 font-semibold tracking-wider">
               NEXT CHAPTER →
             </span>
-            <span class="font-mono text-sm font-semibold text-slate-900 group-hover:text-blue-600 mt-1 block">
+            <span class="font-mono text-base font-bold text-slate-900 group-hover:text-blue-600 mt-1 block">
               {nextChapter.title}
             </span>
           </a>
         ) : (
           <a
             href={`/notebooks/${notebook.slug}`}
-            class="group block p-5 rounded-xl border border-blue-100 bg-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-right sm:col-start-2"
+            class="group block p-5 rounded-2xl border border-blue-200/90 bg-gradient-to-r from-blue-50/50 to-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-right sm:col-start-2"
           >
-            <span class="block text-[11px] font-mono text-blue-600 group-hover:text-blue-700 font-semibold">
-              NOTEBOOK OVERVIEW
+            <span class="block text-[11px] font-mono text-blue-700 group-hover:text-blue-800 font-bold tracking-wider">
+              NOTEBOOK COMPLETE ✓
             </span>
-            <span class="font-mono text-sm font-semibold text-slate-900 group-hover:text-blue-600 mt-1 block">
-              Back to Curriculum →
+            <span class="font-mono text-base font-bold text-slate-900 group-hover:text-blue-600 mt-1 block">
+              Back to Curriculum Overview →
             </span>
           </a>
         )}
       </div>
     </footer>
   </article>
+
+  <script>
+    const updateProgress = () => {
+      const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+      const bar = document.getElementById('reading-progress');
+      if (bar) bar.style.width = scrolled + '%';
+    };
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+  </script>
 </MainLayout>

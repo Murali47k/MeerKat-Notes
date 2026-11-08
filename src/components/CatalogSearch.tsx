@@ -19,7 +19,6 @@ interface Props {
 export default function CatalogSearch({ initialNotes }: Props) {
   const [query, setQuery] = useState('');
 
-  // Filter notes based solely on query text (title, description, author, level)
   const filteredNotes = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return initialNotes;
@@ -37,14 +36,14 @@ export default function CatalogSearch({ initialNotes }: Props) {
 
   return (
     <div className="w-full">
-      {/* Search Input Box - Blue & White Theme */}
-      <div className="relative mb-6">
-        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-blue-500">
+      {/* Search Filter Input */}
+      <div className="relative mb-8">
+        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-blue-600">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth="2"
+              strokeWidth="2.2"
               d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"
             />
           </svg>
@@ -53,78 +52,125 @@ export default function CatalogSearch({ initialNotes }: Props) {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Filter notes..."
-          className="w-full pl-10 pr-12 py-3 text-sm bg-white border border-blue-200/80 rounded-xl shadow-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-mono transition-all"
+          placeholder="Filter notes or chapters..."
+          className="w-full pl-11 pr-20 py-3.5 text-sm bg-white border border-slate-200/90 rounded-2xl shadow-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-mono transition-all"
         />
-        {query && (
-          <button
-            onClick={() => setQuery('')}
-            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-xs font-mono text-blue-600 hover:text-blue-800 transition-colors"
-          >
-            Clear
-          </button>
-        )}
+        <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center gap-2">
+          {query ? (
+            <button
+              onClick={() => setQuery('')}
+              className="text-xs font-mono text-blue-600 hover:text-blue-800 transition-colors px-2 py-1"
+            >
+              Clear
+            </button>
+          ) : (
+            <kbd className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-mono text-slate-400 bg-slate-100 border border-slate-200 rounded-md">
+              /
+            </kbd>
+          )}
+        </div>
       </div>
 
-      {/* Section label */}
-      <div className="flex items-center justify-between mb-3 text-[11px] font-mono tracking-wider text-blue-600/70 uppercase font-semibold">
-        <span>ALL NOTES</span>
-        <span>{filteredNotes.length} item{filteredNotes.length !== 1 ? 's' : ''}</span>
+      {/* Section Header */}
+      <div className="flex items-center justify-between mb-4 text-xs font-mono tracking-wider text-slate-500 uppercase font-semibold">
+        <span className="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+          AVAILABLE NOTEBOOKS
+        </span>
+        <span class="text-slate-400 font-normal">
+          {filteredNotes.length} notebook{filteredNotes.length !== 1 ? 's' : ''}
+        </span>
       </div>
 
-      {/* Notes list */}
-      <div className="space-y-3">
+      {/* Rich Notebook Cards List */}
+      <div className="space-y-4">
         {filteredNotes.map((note) => (
-          <a
+          <div
             key={note.id}
-            href={note.url}
-            className="group block bg-white border border-blue-100 rounded-xl px-5 py-4 hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all cursor-pointer"
+            className="group relative bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs hover:border-blue-300 hover:shadow-md hover:shadow-blue-500/5 transition-all"
           >
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4 min-w-0">
-                {/* Book icon box */}
-                <div className="w-10 h-10 rounded-lg border border-blue-100 bg-blue-50/70 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all shrink-0">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.75"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                </div>
+            {/* Top Row: Meta badges */}
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
+                  {note.type}
+                </span>
+                {note.level && (
+                  <span className="font-mono text-[11px] text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-md">
+                    {note.level}
+                  </span>
+                )}
+                <span className="font-mono text-[11px] text-slate-500">
+                  By <strong className="text-slate-700">{note.author}</strong>
+                </span>
+              </div>
 
-                {/* Title & subtitle */}
-                <div className="min-w-0">
-                  <h3 className="font-mono text-[15px] font-semibold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                    {note.title}
+              <span className="font-mono text-xs text-blue-600 font-semibold bg-blue-50/60 px-2.5 py-0.5 rounded-md">
+                {note.chaptersCount || 1} Chapter Available
+              </span>
+            </div>
+
+            {/* Notebook Title */}
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+              <a href={note.url} className="focus:outline-none">
+                {note.title}
+              </a>
+            </h2>
+
+            {/* Description */}
+            <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed font-sans">
+              {note.description}
+            </p>
+
+            {/* Featured Chapter Highlight Box */}
+            <div className="mt-5 p-4 rounded-xl bg-gradient-to-r from-blue-50/70 to-indigo-50/30 border border-blue-100/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-mono text-xs font-bold flex items-center justify-center shrink-0 shadow-xs">
+                  01
+                </div>
+                <div>
+                  <h3 className="font-mono text-sm font-bold text-slate-900">
+                    Linear Regression
                   </h3>
-                  <p className="font-mono text-xs text-slate-500 mt-0.5 truncate">
-                    <span>{note.author}</span>
-                    {note.level && <span> · {note.level}</span>}
-                    {note.chaptersCount !== undefined && (
-                      <span> · {note.chaptersCount} chapter{note.chaptersCount !== 1 ? 's' : ''}</span>
-                    )}
+                  <p className="text-xs text-slate-500 font-sans mt-0.5">
+                    Mathematical derivations (KaTeX), interactive React plots, Manim video & NumPy implementation.
                   </p>
                 </div>
               </div>
 
-              {/* Badge & Arrow */}
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="font-mono text-[11px] text-blue-700 border border-blue-200 rounded-md px-2.5 py-0.5 bg-blue-50/60 font-medium">
-                  {note.type}
-                </span>
-                <span className="text-blue-400 group-hover:text-blue-700 group-hover:translate-x-1 transition-all text-sm font-mono font-bold">
-                  →
-                </span>
-              </div>
+              <a
+                href="/notebooks/mathematics-ml/01-linear-regression"
+                className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-mono text-xs font-semibold shadow-xs transition-colors"
+              >
+                <span>Read Chapter</span>
+                <span aria-hidden="true">→</span>
+              </a>
             </div>
-          </a>
+
+            {/* Card Footer Actions */}
+            <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+              <a
+                href={note.url}
+                className="text-slate-500 hover:text-blue-600 font-medium transition-colors"
+              >
+                View Curriculum Syllabus →
+              </a>
+              <span className="text-slate-400">
+                Estimated: ~15 mins
+              </span>
+            </div>
+          </div>
         ))}
 
         {filteredNotes.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-xl border border-dashed border-blue-200">
-            <p className="font-mono text-xs text-slate-400">No matching notes found for "{query}"</p>
+          <div className="text-center py-14 bg-white rounded-2xl border border-dashed border-slate-200">
+            <p className="font-mono text-sm text-slate-400">No notes found matching "{query}"</p>
+            <button
+              onClick={() => setQuery('')}
+              className="mt-3 text-xs font-mono text-blue-600 hover:underline"
+            >
+              Clear filter
+            </button>
           </div>
         )}
       </div>

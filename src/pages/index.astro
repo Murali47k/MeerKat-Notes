@@ -20,17 +20,36 @@ const notes = notebooks.map((nb) => ({
 
 <MainLayout title="MeerKat Notes — Mathematics behind ML Algorithms">
   <div class="max-w-3xl mx-auto pt-4 sm:pt-8">
-    <!-- Header: Blue & White Palette -->
-    <div class="mb-8">
-      <span class="font-mono text-xs tracking-widest uppercase text-blue-600 font-semibold block mb-2">
-        KNOWLEDGE BASE
-      </span>
-      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-slate-900">
-        MeerKat <span class="font-serif italic font-light text-blue-600">Notes</span>
+    <!-- Hero Header -->
+    <div class="mb-10 text-left">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 font-mono text-xs font-semibold mb-4 shadow-2xs">
+        <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+        INTERACTIVE TECHNICAL KNOWLEDGE BASE
+      </div>
+
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-slate-900 leading-tight">
+        MeerKat <span class="font-serif italic font-normal text-blue-600">Notes</span>
       </h1>
-      <p class="font-mono text-xs sm:text-[13px] text-slate-500 mt-2">
-        Interactive technical notebook, mathematical derivations &amp; conceptual animations.
+
+      <p class="mt-4 text-base sm:text-lg text-slate-600 font-sans max-w-2xl leading-relaxed">
+        Personal interactive notes, mathematical derivations, interactive React experiments, and Manim animations.
       </p>
+
+      <!-- Feature Badges -->
+      <div class="flex flex-wrap items-center gap-2 mt-5 text-xs font-mono text-slate-500">
+        <span class="px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 font-medium shadow-2xs">
+          📐 KaTeX Derivations
+        </span>
+        <span class="px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 font-medium shadow-2xs">
+          📊 Interactive React Plots
+        </span>
+        <span class="px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 font-medium shadow-2xs">
+          🎬 Manim Animations
+        </span>
+        <span class="px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 font-medium shadow-2xs">
+          🐍 Python from Scratch
+        </span>
+      </div>
     </div>
 
     <!-- Search and Note Catalogue Filter -->
