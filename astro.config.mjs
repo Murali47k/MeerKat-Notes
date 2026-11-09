@@ -7,6 +7,8 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
+  site: 'https://murali47k.github.io',
+  base: '/MeerKat-Notes',
   integrations: [
     mdx(),
     react(),
