@@ -37,17 +37,17 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
       <span class="text-blue-600 font-semibold">Chapter {chapter.order}</span>
     </nav>
 
-    <!-- Chapter Hero Card -->
-    <header class="relative bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
+    <!-- Chapter Hero Card inside the White Notebook Page -->
+    <header class="relative bg-slate-50/70 border border-slate-200/90 rounded-2xl overflow-hidden">
       <!-- Gradient accent strip -->
       <div class="h-1.5 w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-400"></div>
 
-      <div class="p-7 sm:p-9">
-        <div class="flex flex-wrap items-center gap-2 mb-4">
-          <span class="font-mono text-xs uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200/80 px-3 py-1 rounded-md font-bold">
+      <div class="p-6 sm:p-8">
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          <span class="font-mono text-xs uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1 rounded-md font-bold">
             Chapter {String(chapter.order).padStart(2, '0')}
           </span>
-          <span class="font-mono text-xs text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1 rounded-md font-medium">
+          <span class="font-mono text-xs text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-md font-medium">
             {chapter.readingTime} min read
           </span>
           <span class="font-mono text-xs text-indigo-700 bg-indigo-50 border border-indigo-200/70 px-3 py-1 rounded-md font-medium">
@@ -55,32 +55,32 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
           </span>
         </div>
 
-        <h1 class="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
           {chapter.title}
         </h1>
 
         {chapter.description && (
-          <p class="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed font-sans max-w-3xl">
+          <p class="mt-3 text-base sm:text-lg text-slate-600 leading-relaxed font-sans max-w-3xl">
             {chapter.description}
           </p>
         )}
 
         <!-- Quick Jump Navigation Pills -->
-        <div class="mt-7 pt-5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs font-mono text-slate-500 scrollbar-none">
+        <div class="mt-6 pt-4 border-t border-slate-200/70 flex items-center gap-2 overflow-x-auto text-xs font-mono text-slate-500 scrollbar-none">
           <span class="text-blue-700 font-bold uppercase tracking-wider text-[11px] shrink-0">Sections:</span>
-          <a href="#1-intuition--conceptual-overview" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">1. Intuition</a>
-          <a href="#2-mathematical-formulation" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">2. Formulation</a>
-          <a href="#3-interactive-visualization-fitting-the-line" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">3. Interactive Fit</a>
-          <a href="#4-mathematical-animation-gradient-descent-in-action" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">4. Manim Video</a>
-          <a href="#5-analytical-derivation-ordinary-least-squares-ols" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">5. OLS Derivation</a>
-          <a href="#6-optimization-via-gradient-descent" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">6. Optimization</a>
-          <a href="#7-python-implementation-from-scratch" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">7. Code</a>
-          <a href="#8-checkpoint-exercises" class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">8. Exercises</a>
+          <a href="#1-intuition--conceptual-overview" class="px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">1. Intuition</a>
+          <a href="#2-mathematical-formulation" class="px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">2. Formulation</a>
+          <a href="#3-interactive-visualization-fitting-the-line" class="px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">3. Interactive Fit</a>
+          <a href="#4-mathematical-animation-gradient-descent-in-action" class="px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">4. Manim Video</a>
+          <a href="#5-analytical-derivation-ordinary-least-squares-ols" class="px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">5. OLS Derivation</a>
+          <a href="#6-optimization-via-gradient-descent" class="px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">6. Optimization</a>
+          <a href="#7-python-implementation-from-scratch" class="px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">7. Code</a>
+          <a href="#8-checkpoint-exercises" class="px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition whitespace-nowrap">8. Exercises</a>
         </div>
       </div>
     </header>
 
-    <!-- Chapter Content Body with dedicated prose-notes class -->
+    <!-- Chapter Content Body on Solid Crisp White Background -->
     <div class="prose-notes max-w-none">
       <slot />
     </div>
@@ -91,7 +91,7 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
         {prevChapter ? (
           <a
             href={prevChapter.url}
-            class="group block p-5 rounded-2xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-left"
+            class="group block p-5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-400 hover:shadow-md transition-all text-left"
           >
             <span class="block text-[11px] font-mono text-slate-400 group-hover:text-blue-600 font-semibold tracking-wider">
               ← PREVIOUS CHAPTER
@@ -107,7 +107,7 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
         {nextChapter ? (
           <a
             href={nextChapter.url}
-            class="group block p-5 rounded-2xl border border-slate-200 bg-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-right sm:col-start-2"
+            class="group block p-5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-400 hover:shadow-md transition-all text-right sm:col-start-2"
           >
             <span class="block text-[11px] font-mono text-slate-400 group-hover:text-blue-600 font-semibold tracking-wider">
               NEXT CHAPTER →
@@ -119,7 +119,7 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
         ) : (
           <a
             href={`/notebooks/${notebook.slug}`}
-            class="group block p-5 rounded-2xl border border-blue-200/90 bg-gradient-to-r from-blue-50/50 to-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-right sm:col-start-2"
+            class="group block p-5 rounded-xl border border-blue-200/90 bg-gradient-to-r from-blue-50/50 to-white hover:border-blue-400 hover:shadow-md transition-all text-right sm:col-start-2"
           >
             <span class="block text-[11px] font-mono text-blue-700 group-hover:text-blue-800 font-bold tracking-wider">
               NOTEBOOK COMPLETE
