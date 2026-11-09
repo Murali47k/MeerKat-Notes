@@ -3,23 +3,34 @@
 @import "katex/dist/katex.min.css";
 
 :root {
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 body {
-  background-color: #f8fafc;
   color: #0f172a;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 
-/* Subtle ambient background glow for light mode */
-.bg-ambient-grid {
-  background-image: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.07) 0%, rgba(248, 250, 252, 0) 60%),
-                    linear-gradient(to right, rgba(226, 232, 240, 0.25) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(226, 232, 240, 0.25) 1px, transparent 1px);
-  background-size: 100% 100%, 32px 32px, 32px 32px;
+/* =========================================================
+   NOTEBOOK GRAPH PAPER GRID (50% Observable Opacity)
+   Authentic engineering / technical notebook quad paper
+   ========================================================= */
+.bg-notebook-grid {
+  background-color: #fbfcfd;
+  background-image:
+    /* Subtle radial gradient for gentle lighting */
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(59, 130, 246, 0.08) 0%, transparent 70%),
+    /* Primary 24px graph paper lines at ~50% observable opacity */
+    linear-gradient(to right, rgba(148, 163, 184, 0.48) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.48) 1px, transparent 1px),
+    /* Major quad line accents every 120px */
+    linear-gradient(to right, rgba(37, 99, 235, 0.28) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(37, 99, 235, 0.28) 1px, transparent 1px);
+  background-size: 100% 100%, 24px 24px, 24px 24px, 120px 120px, 120px 120px;
+  background-position: center top;
 }
 
 /* Custom scrollbars with blue accent */

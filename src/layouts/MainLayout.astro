@@ -7,8 +7,8 @@ interface Props {
 }
 
 const {
-  title = "MeerKat Notes — Mathematics behind ML",
-  description = "Interactive machine learning notes, mathematical derivations & conceptual animations.",
+  title = "Notes — Mathematics behind ML",
+  description = "Interactive machine learning notes, mathematical derivations, interactive React experiments, and Manim animations.",
 } = Astro.props;
 ---
 
@@ -21,21 +21,29 @@ const {
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
+
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body class="min-h-screen bg-[#f8fafc] bg-ambient-grid text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
-    <!-- Top Navigation - Modern Light Mode -->
-    <header class="border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-40 transition-colors">
+  <body class="min-h-screen bg-notebook-grid text-slate-900 flex flex-col selection:bg-blue-600 selection:text-white">
+    <!-- Top Minimal Navigation - Engineering Notebook Style -->
+    <header class="border-b border-slate-200/80 bg-white/85 backdrop-blur-md sticky top-0 z-40 transition-colors">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <a href="/" class="flex items-center gap-3 group">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-mono text-sm font-extrabold flex items-center justify-center shadow-sm shadow-blue-500/20 group-hover:scale-105 transition-transform">
-            M
+          <div class="w-8 h-8 rounded-lg bg-blue-600 text-white font-mono text-sm font-bold flex items-center justify-center shadow-xs group-hover:bg-blue-700 transition-colors">
+            N
           </div>
           <div class="flex flex-col">
             <span class="font-mono text-sm tracking-tight font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-              MeerKat <span class="text-blue-600 font-serif italic font-normal">Notes</span>
+              Notes
             </span>
             <span class="text-[10px] font-mono text-slate-400 -mt-0.5 tracking-wider uppercase">
-              ML Knowledge Base
+              ML Notebook
             </span>
           </div>
         </a>
@@ -55,9 +63,9 @@ const {
           </a>
           <a
             href="/notebooks/mathematics-ml/01-linear-regression"
-            class="text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/70 px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5"
+            class="text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/70 px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5"
           >
-            <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
             Chapter 01
           </a>
           <a
@@ -66,7 +74,7 @@ const {
             rel="noopener noreferrer"
             class="text-slate-500 hover:text-slate-900 px-2.5 py-1.5 rounded-lg transition-colors font-medium hidden sm:inline-block"
           >
-            GitHub ↗
+            GitHub
           </a>
         </nav>
       </div>
@@ -78,11 +86,11 @@ const {
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-200/80 py-8 bg-white/70 backdrop-blur-xs text-xs font-mono text-slate-500">
+    <footer class="border-t border-slate-200/80 py-8 bg-white/80 backdrop-blur-xs text-xs font-mono text-slate-500">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p>© {new Date().getFullYear()} MeerKat Notes · Created by <strong class="text-slate-700">Murali</strong></p>
-        <div class="flex items-center gap-3 text-slate-400">
-          <span class="text-blue-600 font-semibold">Astro</span>
+        <p>© {new Date().getFullYear()} Notes · Created by <strong class="text-slate-700">Murali</strong></p>
+        <div class="flex items-center gap-3 text-slate-400 font-medium">
+          <span class="text-blue-600">Astro</span>
           <span>·</span>
           <span>MDX</span>
           <span>·</span>

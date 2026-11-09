@@ -48,7 +48,7 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
             Chapter {String(chapter.order).padStart(2, '0')}
           </span>
           <span class="font-mono text-xs text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1 rounded-md font-medium">
-            ⏱ {chapter.readingTime} min read
+            {chapter.readingTime} min read
           </span>
           <span class="font-mono text-xs text-indigo-700 bg-indigo-50 border border-indigo-200/70 px-3 py-1 rounded-md font-medium">
             Supervised Learning
@@ -122,7 +122,7 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
             class="group block p-5 rounded-2xl border border-blue-200/90 bg-gradient-to-r from-blue-50/50 to-white hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all text-right sm:col-start-2"
           >
             <span class="block text-[11px] font-mono text-blue-700 group-hover:text-blue-800 font-bold tracking-wider">
-              NOTEBOOK COMPLETE ✓
+              NOTEBOOK COMPLETE
             </span>
             <span class="font-mono text-base font-bold text-slate-900 group-hover:text-blue-600 mt-1 block">
               Back to Curriculum Overview →
