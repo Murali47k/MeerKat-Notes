@@ -56,7 +56,7 @@ export default function GradientDescentPlot() {
           </span>
           <h3 className="text-lg font-bold text-slate-900 mt-1.5">Loss Surface & Gradient Descent Trajectory</h3>
           <p className="text-xs text-slate-500 font-mono">
-            Observe how parameter updates follow $w := w - \alpha \nabla J(w)$ towards the minimum.
+            Observe how parameter updates follow w := w − α∇J(w) towards the minimum.
           </p>
         </div>
 

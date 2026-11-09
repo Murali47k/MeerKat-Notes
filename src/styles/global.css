@@ -81,9 +81,7 @@ body {
   padding-bottom: 0.75rem;
   border-bottom: 2px solid #e2e8f0;
   letter-spacing: -0.02em;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: block;
 }
 
 .prose-notes h3 {
@@ -198,4 +196,18 @@ body {
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
   overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent KaTeX from collapsing — let it render at natural width */
+.prose-notes .katex-display > .katex {
+  white-space: nowrap;
+  text-align: left;
+}
+
+/* Inline KaTeX: prevent line-break collisions */
+.prose-notes .katex {
+  font-size: 1.05em;
+  line-height: 1.6;
 }

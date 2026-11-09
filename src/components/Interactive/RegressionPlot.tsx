@@ -107,7 +107,7 @@ export default function RegressionPlot() {
           </span>
           <h3 className="text-lg font-bold text-slate-900 mt-1.5">Linear Regression & Residual Minimization</h3>
           <p className="text-xs text-slate-500 font-mono">
-            Adjust slope ($b_1$) and intercept ($b_0$) to minimize Mean Squared Error. Click chart to add data points.
+            Adjust slope (<em>b</em><sub>1</sub>) and intercept (<em>b</em><sub>0</sub>) to minimize Mean Squared Error. Click chart to add data points.
           </p>
         </div>
 
