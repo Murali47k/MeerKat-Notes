@@ -10,7 +10,7 @@ import GradientDescentPlot from '../../../../components/Interactive/GradientDesc
 import ManimPlayer from '../../../../components/ManimPlayer.astro';
 import Equation from '../../../../components/Equation.astro';
 import CodeExample from '../../../../components/CodeExample.astro';
-import Exercise from '../../../../components/Exercise.astro';
+import CheckpointExercises from '../../../../components/CheckpointExercises.tsx';
 
 ## 1. Intuition & Conceptual Overview
 
@@ -146,20 +146,4 @@ class LinearRegression:
 
 ## 8. Checkpoint Exercises
 
-<Exercise
-  question="Why does standard Mean Squared Error use 1/(2m) instead of 1/m?"
-  hint="Think about what happens when you compute the derivative d/dx (x^2)."
-  points={10}
->
-  <div slot="question">
-    In many machine learning textbooks, the cost function is written with a $\frac{1}{2m}$ factor rather than $\frac{1}{m}$. What is the mathematical motivation for the factor of $2$ in the denominator?
-  </div>
-
-  <div slot="solution">
-    When differentiating the squared term $(h_\theta(x) - y)^2$ using the power rule, the derivative brings down an exponent of $2$:
-    
-    $$\frac{d}{dz} \frac{1}{2} z^2 = z$$
-    
-    The $\frac{1}{2}$ constant cleanly cancels out the $2$ resulting from the derivative, simplifying the gradient update equations to $\frac{1}{m}\sum(\hat{y} - y)x$. Because multiplying a function by a positive constant does not change the location of its minimum, the resulting optimal parameters are identical.
-  </div>
-</Exercise>
+<CheckpointExercises client:visible />
