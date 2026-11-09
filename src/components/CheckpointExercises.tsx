@@ -242,17 +242,6 @@ export default function CheckpointExercises() {
 
   return (
     <div className="my-8 font-sans">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
-        <span className="px-2.5 py-0.5 rounded-md bg-blue-600 text-white font-mono text-[11px] font-bold uppercase tracking-wider">
-          Checkpoint
-        </span>
-        <div>
-          <h3 className="text-lg font-bold text-slate-900">Chapter Exercises</h3>
-          <p className="text-xs font-mono text-slate-500 mt-0.5">5 MCQ · 5 Derivation Problems · Linear Regression</p>
-        </div>
-      </div>
-
       {/* ── MCQ Section ── */}
       <div className="mb-10">
         <div className="flex items-center gap-2 mb-4">

@@ -2,62 +2,219 @@
 title: Linear Regression
 description: Understanding linear regression mathematically, geometrically, and algorithmically with interactive simulations.
 order: 1
-readingTime: 15
+readingTime: 35
 ---
 
 import RegressionPlot from '../../../../components/Interactive/RegressionPlot.tsx';
 import GradientDescentPlot from '../../../../components/Interactive/GradientDescentPlot.tsx';
 import ManimPlayer from '../../../../components/ManimPlayer.astro';
-import Equation from '../../../../components/Equation.astro';
 import CodeExample from '../../../../components/CodeExample.astro';
 import CheckpointExercises from '../../../../components/CheckpointExercises.tsx';
 
 ## 1. Intuition & Conceptual Overview
 
-Linear regression is one of the foundational algorithms in supervised machine learning. Given a dataset of paired observations $(x_1, y_1), (x_2, y_2), \dots, (x_m, y_m)$, our objective is to learn a linear mapping that predicts a continuous target variable $\hat{y}$ from an input feature $x$.
+Linear regression is one of the foundational algorithms in supervised machine learning. Given a dataset of $m$ paired observations $(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), \dots, (x^{(m)}, y^{(m)})$, our objective is to learn a linear mapping that predicts a **continuous** target variable $\hat{y}$ from one or more input features $x$.
 
-Geometrically, in two dimensions, this corresponds to fitting the **optimal straight line** through a cloud of data points such that the overall discrepancy between the observed values $y$ and the predicted values $\hat{y}$ is minimized.
+**What makes it "linear"?** The model is linear in its parameters: the prediction is a weighted sum of input features, not necessarily a straight line in input space (polynomial features can be added while keeping the model linear in parameters).
+
+Geometrically, in two dimensions with one feature, this corresponds to fitting the **optimal straight line** through a cloud of data points such that the aggregate vertical distance between observed values $y$ and predicted values $\hat{y}$ is minimised.
+
+> **Key Terminology**
+> - **Residual** $e^{(i)} = y^{(i)} - \hat{y}^{(i)}$: the signed vertical gap between observation and prediction.
+> - **Training error**: average residual size across all $m$ samples.
+> - **Generalisation**: the goal is to minimise error on *unseen* data, not just training data.
 
 ---
 
-## 2. Mathematical Formulation
+## 2. The Hypothesis Function
 
-### The Hypothesis Function
-
-The model represents predictions using a linear combination of input features parameterized by weights:
+The model predicts $\hat{y}$ as a linear combination of input features:
 
 $$\hat{y} = h_\theta(x) = b_0 + b_1 x$$
 
 Where:
-- $b_0$ is the **intercept** (bias term), determining where the line intercepts the vertical axis when $x = 0$.
-- $b_1$ is the **slope** (weight parameter), representing the rate of change of $y$ per unit increase in $x$.
+- $b_0$ is the **intercept** (bias term): where the line crosses the vertical axis ($x = 0$).
+- $b_1$ is the **slope** (weight): the change in $\hat{y}$ per unit increase in $x$.
 
-### The Objective: Mean Squared Error (MSE)
+For **multiple** input features $x_1, x_2, \dots, x_d$, this extends to:
 
-To measure how well a candidate line fits our observed data, we quantify the error across all $m$ training samples using the **Mean Squared Error (MSE)** cost function:
+$$\hat{y} = b_0 + b_1 x_1 + b_2 x_2 + \cdots + b_d x_d = b_0 + \sum_{j=1}^{d} b_j x_j$$
 
-$$J(b_0, b_1) = \frac{1}{2m} \sum_{i=1}^{m} \left( \hat{y}^{(i)} - y^{(i)} \right)^2 = \frac{1}{2m} \sum_{i=1}^{m} \left( (b_0 + b_1 x^{(i)}) - y^{(i)} \right)^2$$
-
-> **Why square the errors?**
-> 1. Squaring prevents positive and negative errors from canceling each other out.
-> 2. It heavily penalizes large outliers.
-> 3. Mathematically, $J(b_0, b_1)$ is a convex paraboloid, guaranteeing a single unique global minimum with zero local minima!
+> **The linearity assumption:** Linear regression assumes the true relationship between $x$ and $y$ is well-approximated by a linear function. When the true relationship is non-linear, the model is **mis-specified** and will have high bias.
 
 ---
 
-## 3. Interactive Visualization: Fitting the Line
+## 3. The Cost Function: Mean Squared Error
 
-Experiment with the interactive tool below. Drag the **Slope ($b_1$)** and **Intercept ($b_0$)** sliders to observe how the residual error bars (shown in dashed red) shrink as the line approaches the optimal Ordinary Least Squares (OLS) fit. Click anywhere inside the canvas to add new custom observations!
+To train the model, we need a measure of how wrong our current parameters are. The standard choice is **Mean Squared Error (MSE)**:
+
+$$J(b_0, b_1) = \frac{1}{2m} \sum_{i=1}^{m} \left( \hat{y}^{(i)} - y^{(i)} \right)^2 = \frac{1}{2m} \sum_{i=1}^{m} \left( b_0 + b_1 x^{(i)} - y^{(i)} \right)^2$$
+
+The $\frac{1}{2}$ is a **notational convenience**: it cancels the exponent $2$ that appears when differentiating, producing cleaner gradient expressions. Crucially, multiplying a function by any positive constant does not shift its minimum:
+
+$$\underset{b_0, b_1}{\arg\min}\ J(b_0, b_1) = \underset{b_0, b_1}{\arg\min}\ 2J(b_0, b_1)$$
+
+> **Why MSE and not absolute error?**
+> 1. Squaring makes $J$ differentiable everywhere: absolute error has no derivative at zero.
+> 2. The squared loss is **convex** in parameters, guaranteeing a single global minimum.
+> 3. Squaring heavily penalises large residuals, discouraging outlier sensitivity.
+> 4. MSE corresponds to the **maximum likelihood estimator** under the assumption of Gaussian noise on $y$.
+
+The cost surface $J(b_0, b_1)$ is a **convex paraboloid**: a bowl shape in 3D parameter space with exactly one global minimum and **zero local minima**.
+
+---
+
+## 4. Interactive Visualization: Fitting the Line
+
+Adjust the sliders to see how slope and intercept affect the residuals and MSE. Click inside the canvas to add your own data points.
 
 <RegressionPlot client:visible />
 
-Notice how minimizing the length of all red dashed residual lines simultaneously drives the Mean Squared Error down to its global minimum.
+Notice how minimizing the total length of the red dashed residual lines simultaneously drives MSE to its global minimum.
 
 ---
 
-## 4. Mathematical Animation: Gradient Descent in Action
+## 5. Analytical Solution: Ordinary Least Squares (OLS)
 
-Watch the mathematical animation below rendered using **Manim** (Python Mathematical Animation Engine). It illustrates how gradient descent iteratively updates parameters to glide down the convex loss surface $J(w)$ toward the optimal line fit:
+### 5.1 Scalar Derivation (Simple Linear Regression)
+
+For simple linear regression ($d = 1$), we can solve for the optimal parameters **analytically** by setting partial derivatives of $J$ to zero.
+
+**Step 1: set $\partial J / \partial b_0 = 0$:**
+
+$$\frac{\partial J}{\partial b_0} = \frac{1}{m} \sum_{i=1}^{m} \left(b_0 + b_1 x^{(i)} - y^{(i)}\right) = 0$$
+
+$$b_0 = \bar{y} - b_1 \bar{x} \qquad \cdots (i)$$
+
+Where $\bar{x} = \frac{1}{m}\sum x^{(i)}$ and $\bar{y} = \frac{1}{m}\sum y^{(i)}$ are the sample means.
+
+**Step 2: set $\partial J / \partial b_1 = 0$:**
+
+$$\frac{\partial J}{\partial b_1} = \frac{1}{m} \sum_{i=1}^{m} \left(b_0 + b_1 x^{(i)} - y^{(i)}\right) \cdot x^{(i)} = 0$$
+
+Substituting $(i)$ into this and simplifying:
+
+$$\sum_{i=1}^{m} \left(x^{(i)} - \bar{x}\right)\left(y^{(i)} - \bar{y}\right) = b_1 \sum_{i=1}^{m} \left(x^{(i)} - \bar{x}\right)^2$$
+
+Solving for $b_1$:
+
+$$\boxed{b_1^* = \frac{\displaystyle\sum_{i=1}^{m} (x^{(i)} - \bar{x})(y^{(i)} - \bar{y})}{\displaystyle\sum_{i=1}^{m} (x^{(i)} - \bar{x})^2} = \frac{\operatorname{Cov}(x, y)}{\operatorname{Var}(x)}}$$
+
+$$\boxed{b_0^* = \bar{y} - b_1^* \bar{x}}$$
+
+> **Key result to remember:** The optimal slope equals the covariance of $x$ and $y$ divided by the variance of $x$. The optimal intercept ensures the regression line always passes through the sample mean point $(\bar{x}, \bar{y})$.
+
+### 5.2 Effect of Feature Scaling on OLS Estimates
+
+If you scale the input feature by a constant $c > 0$ (replace $x$ with $cx$), the slope changes but the predictions remain the same:
+
+$${b_1^*}_{\text{new}} = \frac{\displaystyle\operatorname{Cov}(cx, y)}{\displaystyle\operatorname{Var}(cx)} = \frac{\displaystyle c \cdot \operatorname{Cov}(x,y)}{\displaystyle c^2 \cdot \operatorname{Var}(x)} = \frac{b_1^*}{c}$$
+
+This is why **feature standardisation** (zero mean, unit variance) is important before interpreting coefficient magnitudes: raw coefficient values depend on the measurement units of $x$.
+
+---
+
+## 6. Matrix Formulation & Normal Equations
+
+### 6.1 Vectorising the Problem
+
+For $m$ observations and $d$ features, we stack everything into matrices. Augment each input with a leading $1$ to absorb the intercept:
+
+$$\mathbf{X} = \begin{bmatrix} 1 & x_1^{(1)} & \cdots & x_d^{(1)} \\ 1 & x_1^{(2)} & \cdots & x_d^{(2)} \\ \vdots & \vdots & \ddots & \vdots \\ 1 & x_1^{(m)} & \cdots & x_d^{(m)} \end{bmatrix} \in \mathbb{R}^{m \times (d+1)}, \quad \mathbf{y} = \begin{bmatrix} y^{(1)} \\ y^{(2)} \\ \vdots \\ y^{(m)} \end{bmatrix} \in \mathbb{R}^{m}, \quad \boldsymbol{\beta} = \begin{bmatrix} b_0 \\ b_1 \\ \vdots \\ b_d \end{bmatrix} \in \mathbb{R}^{d+1}$$
+
+The prediction vector is then simply $\hat{\mathbf{y}} = \mathbf{X}\boldsymbol{\beta}$, and the total squared residual is:
+
+$$J(\boldsymbol{\beta}) = \frac{1}{2m} \|\mathbf{y} - \mathbf{X}\boldsymbol{\beta}\|^2 = \frac{1}{2m}(\mathbf{y} - \mathbf{X}\boldsymbol{\beta})^\top (\mathbf{y} - \mathbf{X}\boldsymbol{\beta})$$
+
+### 6.2 Deriving the Normal Equations
+
+Expand the cost and differentiate with respect to $\boldsymbol{\beta}$:
+
+$$J(\boldsymbol{\beta}) = \frac{1}{2m}\left( \mathbf{y}^\top\mathbf{y} - 2\boldsymbol{\beta}^\top \mathbf{X}^\top \mathbf{y} + \boldsymbol{\beta}^\top \mathbf{X}^\top \mathbf{X} \boldsymbol{\beta} \right)$$
+
+Setting $\nabla_{\boldsymbol{\beta}} J = 0$:
+
+$$\frac{\partial J}{\partial \boldsymbol{\beta}} = \frac{1}{m}\left(-\mathbf{X}^\top \mathbf{y} + \mathbf{X}^\top \mathbf{X} \boldsymbol{\beta}\right) = \mathbf{0}$$
+
+This gives the **Normal Equations**:
+
+$$\mathbf{X}^\top \mathbf{X}\ \boldsymbol{\beta}^* = \mathbf{X}^\top \mathbf{y}$$
+
+> **The Normal Equations are the fundamental linear system of OLS.** Every OLS problem reduces to solving this $(d+1) \times (d+1)$ system.
+
+### 6.3 The Closed-Form OLS Solution
+
+If $\mathbf{X}^\top \mathbf{X}$ is **invertible**, the unique solution is:
+
+$$\boxed{\boldsymbol{\beta}^* = \left(\mathbf{X}^\top \mathbf{X}\right)^{-1} \mathbf{X}^\top \mathbf{y}}$$
+
+The matrix $\mathbf{X}^\top \mathbf{X}$ is invertible **if and only if** $\mathbf{X}$ has **full column rank**: meaning no feature is an exact linear combination of other features. Violations (perfect multicollinearity) make the system singular and the solution non-unique.
+
+> **Computational cost:** Inverting $(\mathbf{X}^\top\mathbf{X}) \in \mathbb{R}^{(d+1)\times(d+1)}$ costs $O(d^3)$. For $d \sim 10^4$ features this is expensive. In practice, the system is solved via QR decomposition or iterative methods rather than explicit inversion.
+
+
+---
+
+## 7. Geometric Interpretation & Residual Orthogonality
+
+### 7.1 Projection Geometry
+
+The fitted values $\hat{\mathbf{y}} = \mathbf{X}\boldsymbol{\beta}^*$ are the **orthogonal projection** of the target vector $\mathbf{y}$ onto the column space $\operatorname{col}(\mathbf{X})$. This is exactly what minimising $\|\mathbf{y} - \mathbf{X}\boldsymbol{\beta}\|^2$ means geometrically: find the point in $\operatorname{col}(\mathbf{X})$ closest to $\mathbf{y}$.
+
+The residual vector $\hat{\mathbf{e}} = \mathbf{y} - \hat{\mathbf{y}}$ points perpendicularly away from the subspace.
+
+### 7.2 Proof: OLS Residuals are Orthogonal to col(X)
+
+$$\mathbf{X}^\top \hat{\mathbf{e}} = \mathbf{X}^\top(\mathbf{y} - \mathbf{X}\boldsymbol{\beta}^*) = \mathbf{X}^\top\mathbf{y} - \mathbf{X}^\top\mathbf{X}\boldsymbol{\beta}^* = \mathbf{X}^\top\mathbf{y} - \mathbf{X}^\top\mathbf{y} = \mathbf{0}$$
+
+(using the normal equations: $\mathbf{X}^\top\mathbf{X}\boldsymbol{\beta}^* = \mathbf{X}^\top\mathbf{y}$)
+
+> **Key geometric fact:** $\mathbf{X}^\top \hat{\mathbf{e}} = \mathbf{0}$ means every column of $\mathbf{X}$ (including the constant column of ones) is perpendicular to the residual vector. The column of ones gives $\sum e^{(i)} = 0$: OLS residuals always sum to zero when an intercept is included.
+
+---
+
+## 8. Sum of Squares Decomposition & R²
+
+### 8.1 Three Sums of Squares
+
+For any fitted regression model we define:
+
+| Quantity | Formula | Meaning |
+|---|---|---|
+| $SS_{\text{tot}}$ | $\displaystyle\sum_{i=1}^m (y^{(i)} - \bar{y})^2$ | Total variance in $y$ |
+| $SS_{\text{res}}$ | $\displaystyle\sum_{i=1}^m (y^{(i)} - \hat{y}^{(i)})^2$ | Unexplained variance (residuals) |
+| $SS_{\text{reg}}$ | $\displaystyle\sum_{i=1}^m (\hat{y}^{(i)} - \bar{y})^2$ | Variance explained by the model |
+
+### 8.2 The SS Decomposition
+
+Write $y^{(i)} - \bar{y} = (\hat{y}^{(i)} - \bar{y}) + (y^{(i)} - \hat{y}^{(i)})$ and square both sides, summing over $i$:
+
+$$SS_{\text{tot}} = \sum_i \left[(\hat{y}^{(i)} - \bar{y}) + e^{(i)}\right]^2 = SS_{\text{reg}} + 2\underbrace{\sum_i (\hat{y}^{(i)} - \bar{y})\, e^{(i)}}_{\text{cross-term}} + SS_{\text{res}}$$
+
+The cross-term equals zero because $\hat{\mathbf{y}} - \bar{y}\mathbf{1}$ lies in $\operatorname{col}(\mathbf{X})$ and $\mathbf{X}^\top\hat{\mathbf{e}} = \mathbf{0}$. Therefore:
+
+$$\boxed{SS_{\text{tot}} = SS_{\text{reg}} + SS_{\text{res}}}$$
+
+> **This decomposition is the foundation of ANOVA (Analysis of Variance).** It says total variation = explained variation + unexplained variation.
+
+### 8.3 Coefficient of Determination R²
+
+$$\boxed{R^2 = 1 - \frac{SS_{\text{res}}}{SS_{\text{tot}}} = \frac{SS_{\text{reg}}}{SS_{\text{tot}}}}$$
+
+Since $SS_{\text{res}} \leq SS_{\text{tot}}$ (OLS cannot be worse than the mean model), we have $R^2 \in [0, 1]$.
+
+| $R^2$ value | Interpretation |
+|---|---|
+| $1.0$ | Perfect fit: model explains all variation |
+| $0.9$ | Model explains 90% of variance in $y$ |
+| $0.0$ | Model is no better than predicting $\bar{y}$ for every point |
+| $< 0$ | Possible only when intercept is suppressed: model is worse than the mean |
+
+> **R² does not measure causation** and can be artificially inflated by adding more features. **Adjusted R²** penalises unnecessary features: $\bar{R}^2 = 1 - (1 - R^2)\frac{m-1}{m-d-1}$.
+
+---
+
+## 9. Mathematical Animation: Gradient Descent in Action
 
 <ManimPlayer
   src="/animations/linear-regression/gradient-descent.mp4"
@@ -67,45 +224,59 @@ Watch the mathematical animation below rendered using **Manim** (Python Mathemat
 
 ---
 
-## 5. Analytical Derivation: Ordinary Least Squares (OLS)
+## 10. Optimization via Gradient Descent
 
-Unlike iterative algorithms, simple linear regression possesses an exact closed-form solution obtained by setting partial derivatives of the cost function to zero:
+### 10.1 Why Gradient Descent?
 
-$$\frac{\partial J}{\partial b_0} = 0 \quad \text{and} \quad \frac{\partial J}{\partial b_1} = 0$$
+The OLS closed-form solution requires inverting $(\mathbf{X}^\top\mathbf{X})$, which costs $O(d^3)$. For large $d$ (thousands of features) or streaming data, we instead use **gradient descent**: an iterative first-order optimisation algorithm.
 
-Solving this linear system gives the standard Normal Equations:
+The idea: repeatedly move parameters in the direction of **steepest descent** of $J$.
 
-$$b_1^* = \frac{\sum_{i=1}^{m} (x^{(i)} - \bar{x})(y^{(i)} - \bar{y})}{\sum_{i=1}^{m} (x^{(i)} - \bar{x})^2} = \frac{\operatorname{Cov}(x, y)}{\operatorname{Var}(x)}$$
+### 10.2 The Update Rule
 
-$$b_0^* = \bar{y} - b_1^* \bar{x}$$
+$$b_j := b_j - \alpha \frac{\partial J}{\partial b_j} \quad \text{for all } j \text{ simultaneously}$$
 
-Where $\bar{x} = \frac{1}{m}\sum x^{(i)}$ and $\bar{y} = \frac{1}{m}\sum y^{(i)}$ are the sample means.
+Where $\alpha > 0$ is the **learning rate**: a hyperparameter controlling step size.
 
----
+Computing the partial derivatives from the MSE definition:
 
-## 6. Optimization via Gradient Descent
+$$\frac{\partial J}{\partial b_0} = \frac{1}{m} \sum_{i=1}^{m} \left(\hat{y}^{(i)} - y^{(i)}\right)$$
 
-When scaling to datasets with millions of samples or thousands of features, computing the closed-form inverse becomes computationally expensive ($O(d^3)$). Instead, we apply **Gradient Descent**:
+$$\frac{\partial J}{\partial b_1} = \frac{1}{m} \sum_{i=1}^{m} \left(\hat{y}^{(i)} - y^{(i)}\right) \cdot x^{(i)}$$
 
-$$b_j := b_j - \alpha \frac{\partial J}{\partial b_j}$$
+In vector form, the full gradient update is:
 
-Evaluating the partial derivatives:
+$$\boldsymbol{\beta} := \boldsymbol{\beta} - \frac{\alpha}{m} \mathbf{X}^\top (\mathbf{X}\boldsymbol{\beta} - \mathbf{y})$$
 
-$$\frac{\partial J}{\partial b_0} = \frac{1}{m} \sum_{i=1}^{m} (\hat{y}^{(i)} - y^{(i)})$$
+### 10.3 Learning Rate & Convergence
 
-$$\frac{\partial J}{\partial b_1} = \frac{1}{m} \sum_{i=1}^{m} (\hat{y}^{(i)} - y^{(i)}) \cdot x^{(i)}$$
+The learning rate $\alpha$ is the most critical hyperparameter.
 
-### Interactive Parameter Optimization
+> **Convergence condition:** Gradient descent on the MSE surface is guaranteed to converge if and only if:
+> $$\alpha < \frac{2}{\lambda_{\max}}$$
+> where $\lambda_{\max}$ is the largest eigenvalue of $\frac{1}{m}\mathbf{X}^\top\mathbf{X}$ (the Lipschitz constant of $\nabla J$).
 
-Step through the gradient updates below to see the learning rate $\alpha$ effect:
+| $\alpha$ too small | $\alpha$ optimal | $\alpha$ too large |
+|---|---|---|
+| Converges, but very slowly | Fast, stable convergence | Oscillates or diverges |
+
+### 10.4 Interactive Parameter Optimization
+
+Step through gradient updates below to see how $\alpha$ controls convergence speed:
 
 <GradientDescentPlot client:visible />
 
+### 10.5 Variants of Gradient Descent
+
+| Variant | Gradient computed on | Trade-off |
+|---|---|---|
+| **Batch GD** | All $m$ samples | Stable but slow per step |
+| **Stochastic GD (SGD)** | 1 sample | Fast per step, noisy |
+| **Mini-batch GD** | $k$ samples (e.g. 32) | Balanced: the standard in practice |
+
 ---
 
-## 7. Python Implementation from Scratch
-
-Here is a clean, vectorized implementation using NumPy:
+## 11. Python Implementation from Scratch
 
 <CodeExample title="linear_regression_scratch.py" language="python">
 
@@ -128,22 +299,49 @@ class LinearRegression:
             # 1. Forward prediction: y_hat = Xw + b
             y_predicted = np.dot(X, self.weights) + self.bias
 
-            # 2. Compute gradients
+            # 2. Compute gradients (vectorised: equivalent to the summations above)
             dw = (1 / n_samples) * np.dot(X.T, (y_predicted - y))
             db = (1 / n_samples) * np.sum(y_predicted - y)
 
-            # 3. Update parameters
+            # 3. Simultaneous parameter update
             self.weights -= self.lr * dw
-            self.bias -= self.lr * db
+            self.bias   -= self.lr * db
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         return np.dot(X, self.weights) + self.bias
+
+    def r_squared(self, X: np.ndarray, y: np.ndarray) -> float:
+        y_hat = self.predict(X)
+        ss_res = np.sum((y - y_hat) ** 2)
+        ss_tot = np.sum((y - np.mean(y)) ** 2)
+        return 1 - ss_res / ss_tot
+
+    @staticmethod
+    def ols_closed_form(X: np.ndarray, y: np.ndarray) -> np.ndarray:
+        """Normal equations: beta = (XtX)^{-1} Xt y"""
+        X_aug = np.column_stack([np.ones(len(X)), X])  # prepend bias column
+        return np.linalg.solve(X_aug.T @ X_aug, X_aug.T @ y)
 ```
 
 </CodeExample>
 
 ---
 
-## 8. Checkpoint Exercises
+## 12. Summary: OLS vs Gradient Descent
+
+| | OLS (Normal Equations) | Gradient Descent |
+|---|---|---|
+| **Solution type** | Closed-form, exact | Iterative, approximate |
+| **Complexity** | $O(md^2 + d^3)$ | $O(md)$ per iteration |
+| **Best for** | Small $d$ (< few thousand features) | Large $d$ or streaming data |
+| **Requires tuning** | No | Yes ($\alpha$, iterations) |
+| **Always converges** | Yes (if $\mathbf{X}^\top\mathbf{X}$ invertible) | Only with correct $\alpha$ |
+| **Multicollinearity** | Singular system (fails) | Still runs (biased toward $\mathbf{0}$) |
+
+> **Rule of thumb:** Use OLS when $d < 10^4$. Switch to gradient descent (or its variants) for high-dimensional data, neural networks, or online learning settings.
+
+---
+
+## 13. Checkpoint Exercises
 
 <CheckpointExercises client:visible />
