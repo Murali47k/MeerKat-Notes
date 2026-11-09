@@ -7,7 +7,7 @@ interface Props {
 }
 
 const {
-  title = "Notes — Mathematics behind ML",
+  title = "Meerkat Notes",
   description = "Interactive machine learning notes, mathematical derivations, interactive React experiments, and Manim animations.",
 } = Astro.props;
 ---
@@ -35,17 +35,10 @@ const {
     <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 transition-colors">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <a href="/" class="flex items-center gap-3 group">
-          <div class="w-8 h-8 rounded-lg bg-blue-600 text-white font-mono text-sm font-bold flex items-center justify-center shadow-xs group-hover:bg-blue-700 transition-colors">
-            N
-          </div>
-          <div class="flex flex-col">
-            <span class="font-mono text-sm tracking-tight font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-              Notes
-            </span>
-            <span class="text-[10px] font-mono text-slate-400 -mt-0.5 tracking-wider uppercase">
-              ML Notebook
-            </span>
-          </div>
+          <img src="/logo/meerkat.png" alt="Meerkat" class="w-8 h-8 object-contain rounded-lg" />
+          <span class="font-mono text-sm tracking-tight font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+            Meerkat Notebooks
+          </span>
         </a>
 
         <nav class="flex items-center gap-1 sm:gap-2 text-xs font-mono">
@@ -60,13 +53,6 @@ const {
             class="text-slate-600 hover:text-blue-600 hover:bg-blue-50/80 px-3 py-1.5 rounded-lg transition-colors font-medium"
           >
             Curriculum
-          </a>
-          <a
-            href="/notebooks/mathematics-ml/01-linear-regression"
-            class="text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/70 px-3 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5"
-          >
-            <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-            Chapter 01
           </a>
           <a
             href="https://github.com/Murali47k/MeerKat-Notes"

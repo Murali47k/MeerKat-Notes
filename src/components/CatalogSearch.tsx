@@ -133,7 +133,7 @@ export default function CatalogSearch({ initialNotes }: Props) {
                     Linear Regression
                   </h3>
                   <p className="text-xs text-slate-600 font-sans mt-0.5">
-                    Mathematical derivations (KaTeX), interactive React plots, Manim video & NumPy implementation.
+                    Understanding linear regression mathematically, geometrically, and algorithmically with interactive simulations.
                   </p>
                 </div>
               </div>
