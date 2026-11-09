@@ -139,7 +139,7 @@ export default function CatalogSearch({ initialNotes }: Props) {
               </div>
 
               <a
-                href="/notebooks/mathematics-ml/01-linear-regression"
+                href={`${note.url}/01-linear-regression`}
                 className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-mono text-xs font-semibold transition-colors"
               >
                 <span>Read Chapter</span>

@@ -1,6 +1,6 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import { getAllNotebooks } from '../../utils/content';
+import { getAllNotebooks, withBase } from '../../utils/content';
 
 const notebooks = await getAllNotebooks();
 ---
@@ -25,7 +25,7 @@ const notebooks = await getAllNotebooks();
     <div class="grid grid-cols-1 gap-5">
       {notebooks.map((nb) => (
         <a
-          href={`/notebooks/${nb.slug}`}
+          href={withBase(`/notebooks/${nb.slug}`)}
           class="group block bg-white border border-slate-200/90 rounded-2xl p-7 hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/5 transition-all"
         >
           <div class="flex items-center justify-between gap-2 mb-3">

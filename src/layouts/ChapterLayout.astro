@@ -1,6 +1,7 @@
 ---
 import MainLayout from './MainLayout.astro';
 import type { NotebookItem, ChapterItem } from '../utils/content';
+import { withBase } from '../utils/content';
 
 interface Props {
   notebook: NotebookItem;
@@ -26,11 +27,11 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
   <article class="space-y-8">
     <!-- Breadcrumbs Navigation -->
     <nav class="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-500">
-      <a href="/" class="hover:text-blue-600 transition-colors flex items-center gap-1">
+      <a href={withBase('/')} class="hover:text-blue-600 transition-colors flex items-center gap-1">
         <span>←</span> Catalog
       </a>
       <span class="text-slate-300">/</span>
-      <a href={`/notebooks/${notebook.slug}`} class="hover:text-blue-600 transition-colors truncate max-w-[240px]">
+      <a href={withBase(`/notebooks/${notebook.slug}`)} class="hover:text-blue-600 transition-colors truncate max-w-[240px]">
         {notebook.title}
       </a>
       <span class="text-slate-300">/</span>
@@ -118,7 +119,7 @@ const { notebook, chapter, prevChapter, nextChapter } = Astro.props;
           </a>
         ) : (
           <a
-            href={`/notebooks/${notebook.slug}`}
+            href={withBase(`/notebooks/${notebook.slug}`)}
             class="group block p-5 rounded-xl border border-blue-200/90 bg-gradient-to-r from-blue-50/50 to-white hover:border-blue-400 hover:shadow-md transition-all text-right sm:col-start-2"
           >
             <span class="block text-[11px] font-mono text-blue-700 group-hover:text-blue-800 font-bold tracking-wider">

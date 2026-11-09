@@ -46,6 +46,13 @@ export function parseChapterId(id: string): { notebookSlug: string; chapterSlug:
   };
 }
 
+// Helper to respect import.meta.env.BASE_URL for GitHub Pages
+export function withBase(path: string): string {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${cleanPath}`;
+}
+
 export function parseNotebookId(id: string): string {
   // e.g. "mathematics-ml/notebook" -> "mathematics-ml"
   return id.replace(/\/notebook(\.json)?$/, '');
@@ -64,7 +71,7 @@ export async function getAllNotebooks(): Promise<NotebookItem[]> {
       id: entry.id,
       notebookSlug,
       chapterSlug,
-      url: `/notebooks/${notebookSlug}/${chapterSlug}`,
+      url: withBase(`/notebooks/${notebookSlug}/${chapterSlug}`),
       title: entry.data.title,
       description: entry.data.description || '',
       order: entry.data.order ?? 1,

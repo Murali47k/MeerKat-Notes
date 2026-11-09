@@ -1,6 +1,7 @@
 ---
 import MainLayout from './MainLayout.astro';
 import type { NotebookItem } from '../utils/content';
+import { withBase } from '../utils/content';
 
 interface Props {
   notebook: NotebookItem;
@@ -16,7 +17,7 @@ const { notebook } = Astro.props;
   <div class="space-y-8">
     <!-- Breadcrumb -->
     <div class="flex items-center gap-2 text-xs font-mono text-slate-500">
-      <a href="/" class="hover:text-blue-600 transition-colors flex items-center gap-1">
+      <a href={withBase('/')} class="hover:text-blue-600 transition-colors flex items-center gap-1">
         <span>←</span> Catalog
       </a>
       <span class="text-slate-300">/</span>

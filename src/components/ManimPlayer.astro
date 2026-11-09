@@ -14,6 +14,10 @@ const {
   poster,
   aspectRatio = "16/9",
 } = Astro.props;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const resolvedSrc = src.startsWith('http') || src.startsWith(base) ? src : `${base}${src.startsWith('/') ? src : `/${src}`}`;
+const resolvedPoster = poster && !(poster.startsWith('http') || poster.startsWith(base)) ? `${base}${poster.startsWith('/') ? poster : `/${poster}`}` : poster;
 ---
 
 <div class="my-8 rounded-2xl border border-blue-100 bg-white overflow-hidden shadow-xs">
@@ -34,10 +38,10 @@ const {
       controls
       loop
       playsinline
-      poster={poster}
+      poster={resolvedPoster}
       class="w-full h-full object-contain"
     >
-      <source src={src} type="video/mp4" />
+      <source src={resolvedSrc} type="video/mp4" />
       Your browser does not support the video tag.
     </video>
   </div>

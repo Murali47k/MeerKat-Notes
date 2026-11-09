@@ -1,7 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import CatalogSearch from '../components/CatalogSearch.tsx';
-import { getAllNotebooks } from '../utils/content';
+import { getAllNotebooks, withBase } from '../utils/content';
 
 const notebooks = await getAllNotebooks();
 
@@ -13,7 +13,7 @@ const notes = notebooks.map((nb) => ({
   type: nb.type,
   author: nb.author,
   chaptersCount: nb.chapters.length,
-  url: `/notebooks/${nb.slug}`,
+  url: withBase(`/notebooks/${nb.slug}`),
   level: nb.level,
 }));
 ---
