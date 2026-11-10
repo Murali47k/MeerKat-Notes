@@ -1,321 +1,303 @@
 import React, { useState } from 'react';
 
 /* ─────────────────────────────────────────────
-   MCQ DATA (College/Graduate Level)
+   MCQ DATA  (5 questions, aligned with covered topics)
 ───────────────────────────────────────────── */
 const MCQ = [
   {
     id: 1,
-    q: 'In Ridge regression, the closed-form estimator is β̂_ridge = (XᵀX + λI)⁻¹Xᵀy. If the design matrix X has rank deficient columns (multicollinearity), what is guaranteed about XᵀX + λI for any λ > 0?',
+    q: 'In Ridge regression, the closed-form estimator is β̂_ridge = (XᵀX + λI)⁻¹Xᵀy. If the design matrix X has multicollinear columns, what is mathematically guaranteed about (XᵀX + λI) for any λ > 0?',
     options: [
       'It remains singular and non-invertible',
-      'It is guaranteed to be strictly positive definite and therefore always invertible',
-      'It is positive semidefinite, requiring pseudo-inverse',
+      'It is strictly positive definite and therefore always uniquely invertible',
+      'It is positive semidefinite and requires a pseudo-inverse',
       'It becomes an orthogonal matrix',
     ],
     correct: 1,
     explanation:
-      'Since XᵀX is symmetric positive semidefinite (eigenvalues s_j ≥ 0), adding λI shifts every eigenvalue strictly upward: s_j + λ ≥ λ > 0. All eigenvalues are strictly positive, ensuring strict positive definiteness and unique invertibility.',
+      'Because XᵀX is symmetric positive semidefinite with eigenvalues s_j ≥ 0, adding λI shifts every eigenvalue strictly upward: s_j + λ ≥ λ > 0. Since all eigenvalues are strictly positive, the matrix is guaranteed to be strictly positive definite and invertible.',
   },
   {
     id: 2,
-    q: 'Geometrically, why does Lasso (L1) produce sparse weight vectors (exact zeros) whereas Ridge (L2) almost never does?',
+    q: 'What is the primary practical difference between the weights obtained from Lasso (L1) and Ridge (L2) regression?',
     options: [
-      'Lasso uses a higher learning rate during gradient descent',
-      'The L1 constraint region ‖w‖₁ ≤ t has sharp corners (singularities) aligned with coordinate axes where level sets of MSE touch first',
-      'L2 norm has discontinuous derivatives at zero that repel weights away from axes',
-      'Lasso minimizes absolute error instead of mean squared error',
+      'Ridge sets unimportant feature weights to exactly 0, whereas Lasso never sets weights to 0',
+      'Lasso drives non-essential feature weights to exactly 0 (sparsity), performing automatic feature selection, while Ridge shrinks weights close to 0 but rarely exact 0',
+      'Lasso can only be used with binary classification, while Ridge is for regression',
+      'Ridge requires iterative gradient descent, while Lasso always has an exact closed-form matrix solution',
     ],
     correct: 1,
     explanation:
-      'The L1 norm ball {w : ∑|w_j| ≤ t} is a polytope (diamond in 2D, hyperoctahedron in d-D) with sharp vertices along coordinate axes. The expanding elliptical contours of the smooth MSE loss have a high probability of making first contact at one of these non-differentiable vertices where some w_j = 0. In contrast, the L2 ball is a smooth sphere with no corners.',
+      'Lasso (L1) penalty has a sharp vertex at zero that drives less informative weights to exactly zero, creating a sparse model that effectively performs automated feature selection. Ridge (L2) smoothly shrinks weights towards zero without setting them strictly to zero.',
   },
   {
     id: 3,
-    q: 'Under an orthonormal design matrix (XᵀX = I), how does the Ridge regression weight estimate relate to the OLS weight estimate?',
+    q: 'Why must you ALWAYS standardise features (zero mean, unit variance) before applying Ridge or Lasso regularisation?',
     options: [
-      'ŵ_ridge = ŵ_ols − λ',
-      'ŵ_ridge = ŵ_ols / (1 + λ)',
-      'ŵ_ridge = sign(ŵ_ols) · max(0, |ŵ_ols| − λ)',
-      'ŵ_ridge = (1 + λ) · ŵ_ols',
+      'Because the regularisation penalty treats all weights equally; without standardisation, features with larger physical scales will be unfairly penalised less',
+      'Standardisation is required solely to make the target variable normally distributed',
+      'Without standardisation, the gradient descent algorithm will always diverge to infinity',
+      'Standardisation ensures the Gram matrix XᵀX becomes the identity matrix',
     ],
-    correct: 1,
+    correct: 0,
     explanation:
-      'When XᵀX = I, (XᵀX + λI)⁻¹Xᵀy = (1 + λ)⁻¹ I Xᵀy = ŵ_ols / (1 + λ). Ridge strictly scales every OLS coefficient down proportionally by the constant shrinkage factor 1 / (1 + λ).',
+      'The penalty λ∑w_j² (or λ∑|w_j|) penalises all coefficients uniformly. A feature measured in small units (e.g. millimeters) will naturally have small coefficients and escape penalisation, while a feature in large units (e.g. kilometers) will have huge coefficients and be overly crushed. Standardisation brings all features to an equitable playing field.',
   },
   {
     id: 4,
-    q: 'From a Bayesian perspective, Ridge and Lasso correspond to Maximum A Posteriori (MAP) estimation under which respective prior distributions on the weights w?',
+    q: 'Why should the intercept/bias term b₀ NEVER be included in the Ridge or Lasso regularisation penalty?',
     options: [
-      'Ridge: Uniform prior; Lasso: Normal (Gaussian) prior',
-      'Ridge: Normal (Gaussian) prior; Lasso: Laplace (Double Exponential) prior',
-      'Ridge: Laplace prior; Lasso: Cauchy prior',
-      'Ridge: Student-t prior; Lasso: Normal prior',
+      'Penalising b₀ makes model predictions sensitive to arbitrary constant offsets (translations) in the target variable y',
+      'The intercept derivative is undefined at zero',
+      'Regularising b₀ makes the matrix inversion algorithm computationally intractable',
+      'The intercept is always zero in every regression dataset by definition',
     ],
-    correct: 1,
+    correct: 0,
     explanation:
-      'Maximizing the posterior log p(w|y) ∝ log p(y|w) + log p(w). Under a Gaussian likelihood, an independent Gaussian prior p(w_j) ∝ exp(−w_j² / 2σ_w²) contributes a −∑w_j² penalty (Ridge). An independent Laplace prior p(w_j) ∝ exp(−|w_j| / b) contributes a −∑|w_j| penalty (Lasso).',
+      'The intercept b₀ captures the overall baseline level (mean) of target y. If we penalise b₀, shifting all y values by a constant (e.g. adding 1,000) would cause the regulariser to artificially drag predictions towards 0, biasing the baseline purely because of the chosen origin for y.',
   },
   {
     id: 5,
-    q: 'Why should the bias/intercept term b₀ NEVER be regularized in the Ridge or Lasso penalty terms?',
+    q: 'As the regularisation parameter λ increases from 0 towards infinity in Ridge regression, how do the bias and variance of the model evolve?',
     options: [
-      'Regularizing the intercept prevents matrix inversion algorithms from converging',
-      'Penalizing b₀ makes the fitted predictions dependent on arbitrary constant shifts (translations) in the target variable y',
-      'The intercept derivative is undefined when regularized',
-      'The intercept is always zero in standardized datasets, making regularization redundant',
+      'Bias decreases and variance decreases',
+      'Bias increases and variance increases',
+      'Bias increases and variance decreases',
+      'Bias decreases and variance increases',
     ],
-    correct: 1,
+    correct: 2,
     explanation:
-      'Regularizing the intercept would penalize predicting non-zero mean values. If you add 1,000 to all y values, the true baseline shifts by 1,000; penalizing b₀ would shrink it toward 0, severely biasing predictions solely due to the choice of origin for y.',
+      'At λ = 0 (OLS), bias is lowest (unbiased by Gauss-Markov) but variance can be high. As λ increases, the parameters are heavily restricted and shrunk toward 0, introducing bias (higher approximation error) but dramatically reducing parameter variance (sensitivity to sample noise).',
   },
 ];
 
 /* ─────────────────────────────────────────────
-   THEORY / DERIVATION EXERCISES
+   THEORY DATA (5 questions)
 ───────────────────────────────────────────── */
 const THEORY = [
   {
     id: 1,
-    q: 'Derive the closed-form Ridge Regression estimator β̂_ridge = (XᵀX + λI)⁻¹Xᵀy by minimizing the regularized objective function J(β) = ‖y − Xβ‖₂² + λ‖β‖₂².',
+    q: 'Derive the closed-form Ridge Regression estimator β̂_ridge = (XᵀX + λI)⁻¹Xᵀy by differentiating the objective function J(β) = (1/2m) ‖y − Xβ‖₂² + (λ/2) ‖β‖₂².',
     answer: `1. Expand the objective function in matrix notation:
-   J(β) = (y − Xβ)ᵀ(y − Xβ) + λ βᵀβ
-        = yᵀy − 2 yᵀXβ + βᵀXᵀXβ + λ βᵀβ
-        = yᵀy − 2(Xᵀy)ᵀβ + βᵀ(XᵀX + λI)β
+   J(β) = (1/2m) (y − Xβ)ᵀ(y − Xβ) + (λ/2) βᵀβ
+        = (1/2m) [ yᵀy − 2 yᵀXβ + βᵀXᵀXβ ] + (λ/2) βᵀβ
 
 2. Compute the matrix gradient with respect to β:
-   ∇_β J(β) = −2 Xᵀy + 2(XᵀX + λI)β
+   ∇_β J(β) = (1/m) [ −Xᵀy + XᵀXβ ] + λ β
 
 3. Set the gradient to zero for optimality:
-   −2 Xᵀy + 2(XᵀX + λI)β = 0
-   (XᵀX + λI)β = Xᵀy
+   (1/m) ( −Xᵀy + XᵀXβ ) + λ β = 0
+   −Xᵀy + XᵀXβ + mλ β = 0
+   (XᵀX + mλ I) β = Xᵀy
 
-4. Since (XᵀX + λI) is strictly positive definite for λ > 0, it is invertible:
-   β̂_ridge = (XᵀX + λI)⁻¹ Xᵀy.`,
+4. Letting λ̃ = mλ (reparametrised penalty):
+   (XᵀX + λ̃ I) β = Xᵀy
+
+5. Since (XᵀX + λ̃ I) is strictly positive definite for λ̃ > 0, it is unconditionally invertible:
+   β̂_ridge = (XᵀX + λ̃ I)⁻¹ Xᵀy.`,
   },
   {
     id: 2,
-    q: 'Show why standardizing features (zero mean, unit variance) is strictly mandatory before applying Ridge or Lasso regularization.',
-    answer: `The regularisation penalty λ ∑ w_j² (or λ ∑ |w_j|) penalises all weight magnitudes uniformly.
+    q: 'Prove that the eigenvalues of (XᵀX + λI) are strictly positive for any λ > 0, guaranteeing that the Ridge regression system is always invertible.',
+    answer: `Let S = XᵀX be the Gram matrix of size d × d.
+Since S is symmetric and positive semidefinite:
+• All eigenvalues s_1, s_2, …, s_d are real and non-negative: s_j ≥ 0 for all j = 1, …, d.
 
-Suppose feature x₁ is measured in meters (values ~ 1 to 10) and feature x₂ is measured in millimeters (values ~ 1,000 to 10,000).
-To produce an equivalent physical effect on target y, the true model must satisfy w₂ = w₁ / 1000.
+Let v_j be an eigenvector of S with eigenvalue s_j, so S v_j = s_j v_j.
+Now consider the matrix (S + λI):
+  (S + λI) v_j = S v_j + λ I v_j
+               = s_j v_j + λ v_j
+               = (s_j + λ) v_j
 
-Because w₂ is 1,000 times smaller naturally due solely to units:
-• The penalty λ w₁² will be 1,000,000 times larger than λ w₂²!
-• The regularizer will aggressively suppress x₁ while leaving x₂ almost unpenalized, simply because of arbitrary unit choice.
+Thus, the eigenvalues of (S + λI) are exactly (s_j + λ).
+Since s_j ≥ 0 and λ > 0:
+  s_j + λ ≥ λ > 0   for all j = 1, …, d.
 
-Standardizing features to unit variance ensures every feature's weight operates on an equal scale, allowing the penalty λ to treat all features equitably.`,
+Every eigenvalue of (XᵀX + λI) is strictly positive.
+Since the determinant is the product of eigenvalues:
+  det(XᵀX + λI) = ∏(s_j + λ) > 0.
+Therefore, the matrix is strictly non-singular and always uniquely invertible.`,
   },
   {
     id: 3,
-    q: 'Derive the soft-thresholding operator S_λ(z) for a 1D Lasso problem: minimize J(w) = ½(w − z)² + λ|w|.',
-    answer: `The objective J(w) = ½(w − z)² + λ|w| is non-differentiable at w = 0. We use subgradient calculus:
+    q: 'Explain the bias-variance decomposition of Mean Squared Error: E[(y − f̂(x))²] = Bias(f̂)² + Var(f̂) + σ². Why can regularisation lower the total MSE even though it introduces bias?',
+    answer: `Let the true data generating process be y = f(x) + ε with E[ε] = 0 and Var(ε) = σ².
+For a model estimate f̂(x) trained on a dataset D:
+  E[(y − f̂(x))²] = (E[f̂(x)] − f(x))² + E[(f̂(x) − E[f̂(x)])²] + σ²
+                 = Bias(f̂)² + Var(f̂) + σ²
 
-Subgradient of |w| is:
-∂|w| = { +1 if w > 0,   −1 if w < 0,   [−1, +1] if w = 0 }
+• Bias² measures how far the average model prediction is from the true function (underfitting).
+• Var measures how sensitive the model prediction is across different training sample draws (overfitting).
+• σ² is irreducible environmental noise.
 
-Case 1: w > 0
-∂J/∂w = (w − z) + λ = 0  ⟹  w = z − λ. Valid only if z > λ.
-
-Case 2: w < 0
-∂J/∂w = (w − z) − λ = 0  ⟹  w = z + λ. Valid only if z < −λ.
-
-Case 3: w = 0
-The condition 0 ∈ ∂J(0) means 0 ∈ −z + λ[−1, +1]  ⟹  z ∈ [−λ, λ], i.e., |z| ≤ λ.
-
-Combining all three cases yields the closed-form Soft-Thresholding operator:
-w* = S_λ(z) = sign(z) · max(0, |z| − λ).`,
+Why Regularisation Works:
+OLS is unbiased (Bias = 0), but its variance Var(f̂_OLS) = σ² Tr((XᵀX)⁻¹) can be massive when columns are collinear or m is small.
+By introducing a regularisation penalty λ, we accept a tiny amount of bias (Bias² increases slightly from 0), but the variance drops dramatically:
+  ΔVar ≫ ΔBias²
+Hence, the total MSE = Bias² + Var + σ² achieves a substantially lower minimum at an optimal λ* > 0 than at λ = 0.`,
   },
   {
     id: 4,
-    q: 'Explain the bias-variance tradeoff in Ridge regression. How do bias² and variance evolve as λ varies from 0 to ∞?',
-    answer: `The Expected Prediction Error decomposes into:
-MSE = Bias(β̂)² + Var(β̂) + σ²_noise.
+    q: 'Show why standardising each feature to zero mean and unit variance is mathematically necessary before applying Ridge or Lasso regularisation.',
+    answer: `Suppose we have two features predicting housing prices:
+• x₁: size of house in square meters (values ~ 50 to 500)
+• x₂: number of bedrooms (values ~ 1 to 5)
 
-When λ = 0 (OLS):
-• Bias is zero (OLS is the Best Linear Unbiased Estimator by Gauss-Markov).
-• Variance is high, especially if features are correlated or m ≈ d.
+If x₁ is instead converted to square centimeters, its numeric values become 10,000× larger (500,000 to 5,000,000).
+To maintain the same prediction ŷ, its corresponding weight w₁ must become 10,000× smaller: w₁' = w₁ / 10000.
 
-As λ increases (0 < λ < ∞):
-• β̂ is pulled toward 0, introducing shrinkage bias: Bias(β̂)² increases monotonically.
-• Variance Var(β̂) = σ² (XᵀX + λI)⁻¹ XᵀX (XᵀX + λI)⁻¹ decreases monotonically.
+Penalty effect:
+• In unregularised OLS, predictions are identical regardless of unit choice.
+• In Ridge, the penalty adds λ(w₁² + w₂²). If w₁ is artificially small due to large unit scale, w₁² is 100,000,000× smaller!
+• As a result, the regulariser heavily shrinks w₂ while ignoring w₁, purely as an artifact of measurement units.
 
-When λ → ∞:
-• β̂ → 0, Variance → 0, but Bias² rises to the full target variance.
-
-By allowing a small amount of bias (mild λ), the dramatic reduction in variance often yields a substantial net decrease in total MSE.`,
+By standardising x_j ← (x_j − μ_j) / σ_j:
+Each feature has variance 1. The coefficients w_j reflect relative importance per standard deviation change, allowing λ to penalise all features equitably.`,
   },
   {
     id: 5,
-    q: 'What is Elastic Net, and why was it introduced to overcome specific limitations of Lasso?',
-    answer: `Elastic Net combines L1 and L2 penalties:
-J(β) = MSE + λ₁ ‖β‖₁ + λ₂ ‖β‖₂²
+    q: 'What is Elastic Net, and what two major practical shortcomings of Lasso does it overcome?',
+    answer: `Elastic Net augments the MSE loss with a convex combination of L1 and L2 penalties:
+  J(w) = MSE + λ₁ ‖w‖₁ + (λ₂/2) ‖w‖₂²
 
-It was designed by Zou & Hastie (2005) to overcome three key drawbacks of Lasso:
-1. Feature limit in p > n: In high-dimensional data where p > n, Lasso can select at most n features before saturating. Elastic Net can select all p features.
-2. Grouping effect: When a group of features are highly correlated with each other, Lasso arbitrarily picks just one and ignores the rest. The L2 quadratic term in Elastic Net forces correlated features to be selected together with similar weights.
-3. Extreme collinearity: Severe collinearity causes Lasso prediction performance to degrade compared to Ridge. The L2 term stabilizes the conditioning matrix.`,
+Shortcomings of Lasso it solves:
+1. High-dimensional limit (d > m):
+   In genomics or text data where number of features d exceeds samples m, Lasso can select at most m features before it saturates. Elastic Net has no such limitation and can select all d features if informative.
+
+2. Grouping effect under collinearity:
+   When a group of features are strongly correlated with each other, Lasso arbitrarily picks just one of them and zeros out the rest. The quadratic L2 penalty in Elastic Net encourages correlated features to share weights and be selected together (grouping effect).`,
   },
 ];
 
-export default function CheckpointExercises() {
-  const [activeTab, setActiveTab] = useState<'mcq' | 'theory'>('mcq');
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
-  const [showTheoryAnswers, setShowTheoryAnswers] = useState<Record<number, boolean>>({});
-
-  const handleSelectOption = (qId: number, optIdx: number) => {
-    setSelectedAnswers(prev => ({ ...prev, [qId]: optIdx }));
-  };
-
-  const toggleTheoryAnswer = (qId: number) => {
-    setShowTheoryAnswers(prev => ({ ...prev, [qId]: !prev[qId] }));
-  };
+/* ─────────────────────────────────────────────
+   MCQ CARD COMPONENT (Matching Chapter 1 Style)
+───────────────────────────────────────────── */
+function MCQCard({ item, index }: { item: typeof MCQ[0]; index: number }) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const answered = selected !== null;
 
   return (
-    <div className="my-10 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-zinc-200 pb-4 dark:border-zinc-800 gap-3">
-        <div>
-          <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-            <span>📝</span>
-            Chapter 2 Checkpoint: Mastery Assessment
-          </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Test your conceptual, geometrical, and mathematical grasp of regularisation, shrinkage, and sparsity.
-          </p>
-        </div>
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+      <p className="text-sm font-semibold text-slate-900 leading-snug mb-4">
+        <span className="font-mono text-blue-600 mr-2">Q{index + 1}.</span>
+        {item.q}
+      </p>
 
-        {/* Tab switcher */}
-        <div className="flex rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800 self-start sm:self-auto">
-          <button
-            onClick={() => setActiveTab('mcq')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              activeTab === 'mcq'
-                ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
-                : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
-            }`}
-          >
-            Multiple Choice ({MCQ.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('theory')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              activeTab === 'theory'
-                ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
-                : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
-            }`}
-          >
-            Mathematical Proofs ({THEORY.length})
-          </button>
+      <div className="space-y-2">
+        {item.options.map((opt, i) => {
+          let style =
+            'border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-400 hover:bg-blue-50 cursor-pointer';
+          if (answered) {
+            if (i === item.correct)
+              style = 'border-green-500 bg-green-50 text-green-900 font-semibold';
+            else if (i === selected)
+              style = 'border-red-400 bg-red-50 text-red-800';
+            else
+              style = 'border-slate-100 bg-slate-50 text-slate-400 opacity-60';
+          }
+
+          return (
+            <button
+              key={i}
+              disabled={answered}
+              onClick={() => setSelected(i)}
+              className={`w-full text-left text-sm px-4 py-2.5 rounded-lg border transition-all flex items-center gap-3 ${style}`}
+            >
+              <span className="font-mono text-xs shrink-0 w-5 h-5 rounded-full border border-current flex items-center justify-center">
+                {answered && i === item.correct
+                  ? '✓'
+                  : answered && i === selected
+                  ? '✗'
+                  : String.fromCharCode(65 + i)}
+              </span>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+
+      {answered && (
+        <div
+          className={`mt-4 p-3.5 rounded-lg text-xs leading-relaxed ${
+            selected === item.correct
+              ? 'bg-green-50 border border-green-200 text-green-900'
+              : 'bg-red-50 border border-red-200 text-red-900'
+          }`}
+        >
+          <span className="font-bold mr-1">
+            {selected === item.correct ? 'Correct!' : 'Incorrect.'}
+          </span>
+          {item.explanation}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   THEORY CARD COMPONENT (Matching Chapter 1 Style)
+───────────────────────────────────────────── */
+function TheoryCard({ item, index }: { item: typeof THEORY[0]; index: number }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+      <p className="text-sm font-semibold text-slate-900 leading-snug">
+        <span className="font-mono text-blue-600 mr-2">T{index + 1}.</span>
+        {item.q}
+      </p>
+
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="mt-4 text-xs font-mono font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+      >
+        {open ? 'Hide Answer ▲' : 'Show Answer ▼'}
+      </button>
+
+      {open && (
+        <pre className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 leading-relaxed whitespace-pre-wrap">
+          {item.answer}
+        </pre>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   MAIN EXPORT
+───────────────────────────────────────────── */
+export default function CheckpointExercises() {
+  return (
+    <div className="my-8 font-sans">
+      {/* ── MCQ Section ── */}
+      <div className="mb-10">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+          <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-slate-600">
+            Part A — Multiple Choice
+          </h4>
+        </div>
+        <div className="space-y-4">
+          {MCQ.map((item, i) => (
+            <MCQCard key={item.id} item={item} index={i} />
+          ))}
         </div>
       </div>
 
-      {/* MCQ Section */}
-      {activeTab === 'mcq' && (
-        <div className="mt-6 space-y-6">
-          {MCQ.map(item => {
-            const chosen = selectedAnswers[item.id];
-            const isAnswered = chosen !== undefined;
-            const isCorrect = chosen === item.correct;
-
-            return (
-              <div
-                key={item.id}
-                className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 dark:border-zinc-800 dark:bg-zinc-800/30"
-              >
-                <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-3">
-                  <span className="font-mono text-xs text-indigo-600 dark:text-indigo-400 mr-2">Q{item.id}.</span>
-                  {item.q}
-                </div>
-
-                <div className="space-y-2">
-                  {item.options.map((opt, idx) => {
-                    let btnStyle =
-                      'border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/60 dark:hover:border-zinc-600 text-zinc-700 dark:text-zinc-300';
-
-                    if (isAnswered) {
-                      if (idx === item.correct) {
-                        btnStyle = 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-medium';
-                      } else if (idx === chosen) {
-                        btnStyle = 'border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300';
-                      } else {
-                        btnStyle = 'border-zinc-200 bg-zinc-100/40 dark:border-zinc-800 dark:bg-zinc-900/40 opacity-50 text-zinc-500';
-                      }
-                    }
-
-                    return (
-                      <button
-                        key={idx}
-                        disabled={isAnswered}
-                        onClick={() => handleSelectOption(item.id, idx)}
-                        className={`w-full text-left p-2.5 rounded-md border text-xs transition-colors flex items-start gap-2.5 ${btnStyle}`}
-                      >
-                        <span className="font-mono font-bold text-zinc-400 mt-0.5">
-                          {String.fromCharCode(65 + idx)}.
-                        </span>
-                        <span>{opt}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Explanation feedback */}
-                {isAnswered && (
-                  <div
-                    className={`mt-3 p-3 rounded text-xs border ${
-                      isCorrect
-                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-900/40'
-                        : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900/40'
-                    }`}
-                  >
-                    <div className="font-semibold mb-1">
-                      {isCorrect ? '✓ Correct Answer' : '✕ Needs Review'}
-                    </div>
-                    <div>{item.explanation}</div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+      {/* ── Theory Section ── */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+          <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-slate-600">
+            Part B — Derivation & Theory
+          </h4>
         </div>
-      )}
-
-      {/* Theory & Derivation Section */}
-      {activeTab === 'theory' && (
-        <div className="mt-6 space-y-6">
-          {THEORY.map(item => {
-            const isOpen = showTheoryAnswers[item.id];
-
-            return (
-              <div
-                key={item.id}
-                className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 dark:border-zinc-800 dark:bg-zinc-800/30"
-              >
-                <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-                  <span className="font-mono text-xs text-indigo-600 dark:text-indigo-400 mr-2">P{item.id}.</span>
-                  {item.q}
-                </div>
-
-                <div className="mt-3">
-                  <button
-                    onClick={() => toggleTheoryAnswer(item.id)}
-                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
-                  >
-                    <span>{isOpen ? '▲ Hide Step-by-Step Proof' : '▼ Reveal Full Derivation & Solution'}</span>
-                  </button>
-
-                  {isOpen && (
-                    <div className="mt-3 p-3.5 rounded bg-zinc-900 text-zinc-200 font-mono text-xs whitespace-pre-wrap leading-relaxed border border-zinc-700/60 overflow-x-auto">
-                      {item.answer}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        <div className="space-y-4">
+          {THEORY.map((item, i) => (
+            <TheoryCard key={item.id} item={item} index={i} />
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }
