@@ -7,6 +7,7 @@ readingTime: 30
 
 import RegularizationComparePlot from '../../../../components/notebooks/mathematics-ml/02-ridge-lasso/RegularizationComparePlot.tsx';
 import CodeExample from '../../../../components/CodeExample.astro';
+import FunFact from '../../../../components/FunFact.astro';
 import CheckpointExercises from '../../../../components/notebooks/mathematics-ml/02-ridge-lasso/CheckpointExercises.tsx';
 
 ## 1. Motivation: The Failure Modes of Ordinary Least Squares
@@ -166,13 +167,15 @@ Because the penalty adds $\lambda (w_1^2 + w_2^2)$ uniformly, $w_2^2$ will be mi
 
 ---
 
-> **Fun Fact: Elastic Net**
->
-> What if you can't decide between Ridge and Lasso? In 2005, Zou & Hastie created **Elastic Net**, which blends both penalties together:
->
-> $$J_{\text{ElasticNet}}(\mathbf{w}) = \text{MSE} + \lambda \left[ \alpha \|\mathbf{w}\|_1 + \frac{1 - \alpha}{2} \|\mathbf{w}\|_2^2 \right]$$
->
-> When features are strongly correlated, Lasso arbitrarily picks just one feature and discards the rest. Elastic Net's $L_2$ term groups correlated features together so they are selected as a team, while the $L_1$ term still ensures sparsity!
+<FunFact title="Fun Fact: Elastic Net">
+
+What if you can't decide between Ridge and Lasso? In 2005, Zou & Hastie created **Elastic Net**, which blends both penalties together:
+
+$$J_{\text{ElasticNet}}(\mathbf{w}) = \text{MSE} + \lambda \left[ \alpha \|\mathbf{w}\|_1 + \frac{1 - \alpha}{2} \|\mathbf{w}\|_2^2 \right]$$
+
+When features are strongly correlated, Lasso arbitrarily picks just one feature and discards the rest. Elastic Net's $L_2$ term groups correlated features together so they are selected as a team, while the $L_1$ term still ensures sparsity!
+
+</FunFact>
 
 ---
 
