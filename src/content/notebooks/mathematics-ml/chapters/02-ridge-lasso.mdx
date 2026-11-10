@@ -1,0 +1,311 @@
+---
+title: Ridge & Lasso Regularisation
+description: Understanding L1 and L2 regularisation, preventing overfitting, closed-form Ridge derivations, and the bias-variance tradeoff.
+order: 2
+readingTime: 30
+---
+
+import RegularizationComparePlot from '../../../../components/notebooks/mathematics-ml/02-ridge-lasso/RegularizationComparePlot.tsx';
+import CodeExample from '../../../../components/CodeExample.astro';
+import FunFact from '../../../../components/FunFact.astro';
+import CheckpointExercises from '../../../../components/notebooks/mathematics-ml/02-ridge-lasso/CheckpointExercises.tsx';
+
+## 1. Motivation: The Failure Modes of Ordinary Least Squares
+
+In [Chapter 1: Linear Regression](/notebooks/mathematics-ml/01-linear-regression), we derived the closed-form Ordinary Least Squares (OLS) estimator:
+
+$$\hat{\boldsymbol{\beta}}_{\text{OLS}} = \left( \mathbf{X}^\top \mathbf{X} \right)^{-1} \mathbf{X}^\top \mathbf{y}$$
+
+While OLS enjoys the celebrated status of being the **Best Linear Unbiased Estimator (BLUE)** under the Gauss-Markov theorem, it possesses two severe failure modes in practical machine learning:
+
+1. **Multicollinearity & Explosive Variance:** When features are strongly correlated, columns of the design matrix $\mathbf{X}$ are nearly linearly dependent. The Gram matrix $\mathbf{X}^\top \mathbf{X}$ becomes near-singular (its determinant approaches zero). Inverting it amplifies minor noise in data, causing parameter estimates to oscillate violently with massive positive and negative values.
+2. **Overfitting in High Dimensions ($d \approx m$ or $d > m$):** When the number of features $d$ approaches or exceeds the number of observations $m$, $\mathbf{X}^\top \mathbf{X}$ is strictly rank-deficient and mathematically non-invertible. Even when $d < m$, an unconstrained model memorises random noise in the training set, yielding near-zero training error but terrible test error.
+
+> **The Core Idea of Regularisation:**
+> By intentionally introducing a small, controlled amount of **bias**, we can dramatically suppress model **variance**, yielding a lower overall Mean Squared Error (MSE) on unseen data.
+
+---
+
+## 2. Mathematical Formulation: L2 (Ridge) vs L1 (Lasso)
+
+Regularisation penalises complex hypotheses by adding a penalty on the magnitude of the coefficient vector $\mathbf{w} = [w_1, w_2, \dots, w_d]^\top$ to the loss function.
+
+> **Important Rule:**
+> We **never regularise the intercept** $b_0$. Penalising $b_0$ would make our predictions dependent on arbitrary constant shifts (translations) in the target values $\mathbf{y}$.
+
+### 2.1 Ridge Regression ($L_2$ Regularisation / Tikhonov)
+
+Ridge regression penalises the sum of squared weights ($L_2$ norm):
+
+$$J_{\text{Ridge}}(\mathbf{w}, b) = \frac{1}{2m} \sum_{i=1}^{m} \left( \mathbf{w}^\top \mathbf{x}^{(i)} + b - y^{(i)} \right)^2 + \frac{\lambda}{2} \|\mathbf{w}\|_2^2$$
+
+Where:
+- $\|\mathbf{w}\|_2^2 = \sum_{j=1}^{d} w_j^2 = \mathbf{w}^\top \mathbf{w}$
+- $\lambda \ge 0$ is the regularisation hyperparameter.
+- When $\lambda = 0$, $J_{\text{Ridge}}$ simplifies back to standard OLS.
+- As $\lambda \to \infty$, all weights are pulled towards zero: $\mathbf{w} \to \mathbf{0}$, predicting the flat baseline mean $\hat{y} = \bar{y}$.
+
+### 2.2 Lasso Regression ($L_1$ Regularisation)
+
+Lasso (**Least Absolute Shrinkage and Selection Operator**) penalises the sum of absolute values ($L_1$ norm):
+
+$$J_{\text{Lasso}}(\mathbf{w}, b) = \frac{1}{2m} \sum_{i=1}^{m} \left( \mathbf{w}^\top \mathbf{x}^{(i)} + b - y^{(i)} \right)^2 + \lambda \|\mathbf{w}\|_1$$
+
+Where $\|\mathbf{w}\|_1 = \sum_{j=1}^{d} |w_j|$.
+
+Unlike Ridge, which smoothly shrinks weights toward zero without ever making them exactly zero, Lasso drives non-essential weights to **identically zero**. Lasso therefore acts as an automated **feature selection** mechanism, giving us sparse and interpretable models.
+
+---
+
+## 3. Interactive Comparison: OLS vs Ridge vs Lasso
+
+The interactive benchmark below demonstrates how OLS, Ridge, and Lasso respond to polynomial feature orders and extreme leverage outliers. Adjust the penalty $\lambda$ and observe the curves and coefficient metrics:
+
+<RegularizationComparePlot client:visible />
+
+### Key Takeaways from the Simulation:
+1. **At $\lambda = 0$**, both Ridge and Lasso coincide with unconstrained polynomial OLS, oscillating wildly across sample points.
+2. **As $\lambda$ increases**, Ridge flattens the curve smoothly, shrinking all coefficients proportionally.
+3. **Lasso eliminates terms completely**, setting their coefficients to exactly $0$ and simplifying the hypothesis space.
+4. **Outlier Robustness:** In the presence of high-leverage outliers, OLS violently shifts its trajectory to accommodate the noise, while Ridge and Lasso remain stable and anchored.
+
+---
+
+## 4. Analytical Solution to Ridge Regression
+
+Unlike standard OLS, which fails when $\mathbf{X}^\top\mathbf{X}$ is singular, Ridge regression **always** has a unique, closed-form analytical solution for any $\lambda > 0$.
+
+Assuming data has been centered so the intercept is omitted, the objective function in matrix notation is:
+
+$$J(\mathbf{w}) = \frac{1}{2m} (\mathbf{y} - \mathbf{X}\mathbf{w})^\top (\mathbf{y} - \mathbf{X}\mathbf{w}) + \frac{\lambda}{2} \mathbf{w}^\top \mathbf{w}$$
+
+Expanding the matrix quadratic:
+
+$$J(\mathbf{w}) = \frac{1}{2m} \left( \mathbf{y}^\top\mathbf{y} - 2\mathbf{w}^\top\mathbf{X}^\top\mathbf{y} + \mathbf{w}^\top\mathbf{X}^\top\mathbf{X}\mathbf{w} \right) + \frac{\lambda}{2} \mathbf{w}^\top \mathbf{w}$$
+
+Taking the gradient with respect to $\mathbf{w}$:
+
+$$\nabla_{\mathbf{w}} J(\mathbf{w}) = \frac{1}{m} \left( -\mathbf{X}^\top\mathbf{y} + \mathbf{X}^\top\mathbf{X}\mathbf{w} \right) + \lambda \mathbf{w}$$
+
+Setting the gradient to zero:
+
+$$\frac{1}{m} \left( \mathbf{X}^\top\mathbf{X}\mathbf{w} - \mathbf{X}^\top\mathbf{y} \right) + \lambda \mathbf{w} = \mathbf{0}$$
+
+Multiplying through by $m$ and grouping terms:
+
+$$\left( \mathbf{X}^\top\mathbf{X} + m\lambda \mathbf{I}_d \right) \mathbf{w} = \mathbf{X}^\top \mathbf{y}$$
+
+Defining the reparametrised shrinkage penalty $\tilde{\lambda} = m\lambda$:
+
+$$\hat{\mathbf{w}}_{\text{Ridge}} = \left( \mathbf{X}^\top\mathbf{X} + \tilde{\lambda}\mathbf{I}_d \right)^{-1} \mathbf{X}^\top \mathbf{y}$$
+
+### 4.1 Why is $\mathbf{X}^\top\mathbf{X} + \tilde{\lambda}\mathbf{I}$ Always Invertible?
+
+Let the Gram matrix $\mathbf{S} = \mathbf{X}^\top\mathbf{X}$ have eigenvalues $s_1 \ge s_2 \ge \dots \ge s_d \ge 0$ (since $\mathbf{S}$ is symmetric positive semidefinite).
+
+When we add $\tilde{\lambda}\mathbf{I}$, every eigenvalue is shifted upward:
+
+$$\text{eig}_j(\mathbf{X}^\top\mathbf{X} + \tilde{\lambda}\mathbf{I}) = s_j + \tilde{\lambda}$$
+
+For any $\tilde{\lambda} > 0$:
+
+$$s_j + \tilde{\lambda} \ge \tilde{\lambda} > 0 \quad \forall j$$
+
+Because every single eigenvalue is strictly positive, the determinant satisfies:
+
+$$\det(\mathbf{X}^\top\mathbf{X} + \tilde{\lambda}\mathbf{I}) = \prod_{j=1}^{d} (s_j + \tilde{\lambda}) > 0$$
+
+Therefore, $\mathbf{X}^\top\mathbf{X} + \tilde{\lambda}\mathbf{I}$ is **strictly positive definite** and **unconditionally invertible**, even if $\mathbf{X}$ has multicollinear columns or more features than rows ($d > m$)!
+
+---
+
+## 5. The Bias-Variance Tradeoff in Regularisation
+
+The expected prediction error at an unseen test point $x_0$ decomposes into three fundamental components:
+
+$$\mathbb{E}\left[ (y_0 - \hat{f}(x_0))^2 \right] = \underbrace{\text{Bias}(\hat{f}(x_0))^2}_{\text{Approximation Error}} + \underbrace{\text{Var}(\hat{f}(x_0))}_{\text{Parameter Estimation Noise}} + \underbrace{\sigma^2}_{\text{Irreducible Noise}}$$
+
+The plot below illustrates how varying the regularisation strength $\lambda$ navigates this tradeoff:
+
+<div class="my-6 flex flex-col items-center">
+  <img 
+    src="/MeerKat-Notes/images/notebooks/mathematics-ml/02-ridge-lasso/bias_variance_tradeoff.png" 
+    alt="Bias-Variance Tradeoff in Regularised Regression" 
+    class="rounded-xl border border-slate-200 shadow-xs max-w-full h-auto"
+  />
+  <p class="text-xs text-slate-500 mt-2 text-center">
+    Figure: Expected prediction error decomposition across regularisation strength &lambda;.
+  </p>
+</div>
+
+- **At $\lambda = 0$ (OLS):** Bias is low (the model is flexible and unconstrained), but variance is high because parameter estimates are extremely sensitive to fluctuations in the training sample.
+- **As $\lambda$ increases:** Weights are restricted and shrunk toward zero. This introduces a slight approximation bias, but causes parameter variance to drop precipitously.
+- **The Optimal Sweet Spot $\lambda^*$:** The substantial drop in variance far outweighs the slight increase in bias, producing a lower overall test error.
+- **As $\lambda \to \infty$:** The model underfits, collapsing to the constant mean $\hat{y} = \bar{y}$ with high bias and zero variance.
+
+---
+
+## 6. Practical Rule: Why Feature Standardisation is Mandatory
+
+In unregularised linear regression, multiplying a feature by a constant scale factor $c$ simply scales its weight by $1/c$ without altering model predictions.
+
+**This scale invariance is completely broken under regularisation!**
+
+Consider two features:
+- $x_1$: Income in dollars ($\sim $50,000$)
+- $x_2$: Age in years ($\sim 30$)
+
+Because income values are so large, its weight $w_1$ will naturally be very small ($\approx 0.0001$), while age weight $w_2$ will be much larger ($\approx 0.5$).
+Because the penalty adds $\lambda (w_1^2 + w_2^2)$ uniformly, $w_2^2$ will be millions of times larger than $w_1^2$. The regulariser will aggressively crush $w_2$ while virtually ignoring $w_1$, purely because of the measurement units!
+
+> **Golden Rule of Regularisation:**
+> Always standardise your input features to zero mean and unit variance before running Ridge or Lasso:
+> 
+> $$x_{ij} \leftarrow \frac{x_{ij} - \mu_j}{\sigma_j}$$
+> 
+> Also center the target variable $\mathbf{y} \leftarrow \mathbf{y} - \bar{y}$ so that no intercept penalisation is needed.
+
+---
+
+<FunFact title="Fun Fact: Elastic Net">
+
+What if you can't decide between Ridge and Lasso? In 2005, Zou & Hastie created **Elastic Net**, which blends both penalties together:
+
+$$J_{\text{ElasticNet}}(\mathbf{w}) = \text{MSE} + \lambda \left[ \alpha \|\mathbf{w}\|_1 + \frac{1 - \alpha}{2} \|\mathbf{w}\|_2^2 \right]$$
+
+When features are strongly correlated, Lasso arbitrarily picks just one feature and discards the rest. Elastic Net's $L_2$ term groups correlated features together so they are selected as a team, while the $L_1$ term still ensures sparsity!
+
+</FunFact>
+
+---
+
+## 7. Python Implementation from Scratch
+
+### 7.1 Ridge Regression (Closed-Form Solution)
+
+<CodeExample title="ridge_regression.py" language="python">
+
+```python
+import numpy as np
+
+class RidgeRegression:
+    """Ridge (L2) Regression using closed-form normal equations."""
+    def __init__(self, alpha: float = 1.0):
+        self.alpha = float(alpha)
+        self.weights = None
+        self.bias = 0.0
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        n_samples, n_features = X.shape
+        
+        # 1. Center target
+        y_mean = np.mean(y)
+        y_centered = y - y_mean
+        
+        # 2. Standardize features
+        self.x_mean = np.mean(X, axis=0)
+        self.x_std = np.std(X, axis=0)
+        self.x_std[self.x_std == 0] = 1.0
+        X_scaled = (X - self.x_mean) / self.x_std
+
+        # 3. Closed-form: w = (X^T X + alpha * I)^(-1) X^T y
+        A = X_scaled.T @ X_scaled + self.alpha * np.eye(n_features)
+        b = X_scaled.T @ y_centered
+        w_scaled = np.linalg.solve(A, b)
+
+        # 4. Rescale weights back to original units
+        self.weights = w_scaled / self.x_std
+        self.bias = y_mean - np.sum(self.weights * self.x_mean)
+        return self
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        return X @ self.weights + self.bias
+```
+
+</CodeExample>
+
+### 7.2 Lasso Regression (Coordinate Descent)
+
+<CodeExample title="lasso_regression.py" language="python">
+
+```python
+import numpy as np
+
+class LassoRegression:
+    """Lasso (L1) Regression using Coordinate Descent."""
+    def __init__(self, alpha: float = 1.0, max_iter: int = 1000, tol: float = 1e-4):
+        self.alpha = float(alpha)
+        self.max_iter = max_iter
+        self.tol = tol
+        self.weights = None
+        self.bias = 0.0
+
+    @staticmethod
+    def _soft_threshold(rho: float, lam: float) -> float:
+        """Soft-thresholding operator: S_lambda(rho)"""
+        if rho > lam:
+            return rho - lam
+        elif rho < -lam:
+            return rho + lam
+        else:
+            return 0.0
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        n_samples, n_features = X.shape
+        y_mean = np.mean(y)
+        y_centered = y - y_mean
+
+        # Standardize features
+        self.x_mean = np.mean(X, axis=0)
+        self.x_std = np.std(X, axis=0)
+        self.x_std[self.x_std == 0] = 1.0
+        X_scaled = (X - self.x_mean) / self.x_std
+
+        w = np.zeros(n_features)
+        col_norms = np.sum(X_scaled ** 2, axis=0)
+
+        # Coordinate Descent Loop
+        for iteration in range(self.max_iter):
+            w_old = w.copy()
+            for j in range(n_features):
+                # Calculate partial residuals excluding feature j
+                pred_no_j = X_scaled @ w - X_scaled[:, j] * w[j]
+                r_j = y_centered - pred_no_j
+                rho_j = np.dot(X_scaled[:, j], r_j)
+
+                # Soft threshold update
+                thresh = self.alpha * n_samples
+                w[j] = self._soft_threshold(rho_j, thresh) / col_norms[j]
+
+            # Check convergence
+            if np.max(np.abs(w - w_old)) < self.tol:
+                break
+
+        self.weights = w / self.x_std
+        self.bias = y_mean - np.sum(self.weights * self.x_mean)
+        return self
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        return X @ self.weights + self.bias
+```
+
+</CodeExample>
+
+---
+
+## 8. Summary: OLS vs Ridge vs Lasso
+
+| Property | Ordinary Least Squares (OLS) | Ridge ($L_2$) | Lasso ($L_1$) |
+|---|---|---|---|
+| **Penalty Term** | None | $\frac{\lambda}{2} \|\mathbf{w}\|_2^2$ | $\lambda \|\mathbf{w}\|_1$ |
+| **Solution Type** | Closed-form $\left(\mathbf{X}^\top\mathbf{X}\right)^{-1}\mathbf{X}^\top\mathbf{y}$ | Closed-form $\left(\mathbf{X}^\top\mathbf{X} + \lambda\mathbf{I}\right)^{-1}\mathbf{X}^\top\mathbf{y}$ | Iterative (Coordinate Descent) |
+| **Feature Selection** | No | No (weights shrink, rarely exact 0) | **Yes** (unimportant weights become exact 0) |
+| **Multicollinearity** | Fails / Explosive variance | Solves effectively | Selects 1 feature arbitrarily |
+| **High Dimensions ($d > m$)** | Cannot be solved | Solves easily | Selects at most $m$ features |
+| **Main Advantage** | Unbiased estimator | Smooth shrinkage, stable inversion | Sparse, interpretable models |
+
+---
+
+## 9. Checkpoint Exercises
+
+<CheckpointExercises client:visible />
