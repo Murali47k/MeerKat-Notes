@@ -1,0 +1,414 @@
+---
+title: Logistic Regression
+description: Understanding binary classification, logit and odds ratio, the sigmoid activation curve, maximum likelihood estimation, and cross-entropy loss.
+order: 3
+readingTime: 35
+---
+
+import LogisticVsLinearPlot from '../../../../components/notebooks/mathematics-ml/03-logistic-regression/LogisticVsLinearPlot.tsx';
+import CodeExample from '../../../../components/CodeExample.astro';
+import FunFact from '../../../../components/FunFact.astro';
+import CheckpointExercises from '../../../../components/notebooks/mathematics-ml/03-logistic-regression/CheckpointExercises.tsx';
+
+## 1. Motivation: Why Linear Regression Fails for Classification
+
+In [Chapter 1: Linear Regression](/notebooks/mathematics-ml/01-linear-regression) and [Chapter 2: Ridge & Lasso](/notebooks/mathematics-ml/02-ridge-lasso), our task was to predict a **continuous** response variable $y \in \mathbb{R}$ (such as house prices or stock valuations).
+
+However, many fundamental problems in science, medicine, and finance require answering **discrete qualitative questions**:
+- Will a bank approve this loan application? ($\text{Approved } = 1, \text{ Rejected } = 0$)
+- Is a patient's tumor malignant or benign? ($1 \text{ or } 0$)
+- Is an incoming email spam or ham? ($1 \text{ or } 0$)
+
+This problem formulation is known as **Binary Classification**, where our target belongs to the discrete set:
+
+$$y \in \{0, 1\}$$
+
+### 1.1 The Pitfalls of Ordinary Least Squares (OLS) for Classification
+
+Suppose a bank wants to automate loan approval decisions based on an applicant's annual income $x$ (in thousands of dollars). A naive approach would be to fit a standard linear regression model directly to the binary labels:
+
+$$\hat{y} = \mathbf{w}^\top \mathbf{x} + b$$
+
+and classify the loan as approved if $\hat{y} \ge 0.5$, and rejected if $\hat{y} < 0.5$.
+
+While this seems intuitive at first glance, ordinary linear regression suffers from two fatal flaws:
+
+1. **Unbounded Predictions (Violating Probability Axioms):**
+   A probability $P(y=1|\mathbf{x})$ must strictly satisfy Kolmogorov's probability axioms:
+   
+   $$0 \le P(y=1|\mathbf{x}) \le 1$$
+   
+   A straight line $\mathbf{w}^\top \mathbf{x} + b$ is inherently unbounded ($-\infty < \hat{y} < \infty$). For an applicant with a very low income, the line will predict negative probabilities ($\hat{y} = -0.35$). For an ultra-high earner, it predicts probabilities well above one ($\hat{y} = 1.45$), which is statistically meaningless.
+
+2. **Severe Vulnerability to High-Leverage Extreme Points:**
+   Linear regression minimises squared residuals $\sum (y^{(i)} - \hat{y}^{(i)})^2$. If an ultra-wealthy applicant with an annual income of $500{,}000$ enters the dataset, their label is obviously $y = 1$.
+   However, because their linear prediction might be $\hat{y} = 4.0$, the squared error $(1 - 4.0)^2 = 9$ is massive! To minimise this penalty, OLS rotates and shifts the regression line rightward, drastically changing the decision threshold and incorrectly rejecting legitimate middle-income applicants who were previously approved!
+
+---
+
+## 2. Interactive Comparison: Linear vs Logistic Regression
+
+The interactive workbench below simulates loan approval based on an applicant's annual income. Observe how Ordinary Least Squares (orange) overshoots $[0, 1]$ and shifts when high-income applicants are introduced, whereas the Logistic Regression curve (blue) naturally squashes all predictions into valid probabilities:
+
+<LogisticVsLinearPlot client:visible />
+
+### Key Takeaways from the Simulation:
+1. **Saturation at Asymptotes:** The logistic curve smoothly tapers off towards $0$ as income decreases and towards $1$ as income increases.
+2. **Robustness to Extreme Values:** Toggling the outlier applicant ($+145\text{k}$) severely pulls the linear decision boundary to the right, whereas the logistic decision boundary stays firmly rooted at the true class boundary.
+3. **Threshold Calibration:** Adjusting the decision threshold allows institutions to trade off conservative vs permissive risk profiles without altering the underlying probability model.
+
+---
+
+## 3. From Odds and Logit to the Logistic Sigmoid
+
+To build a mathematically sound classification model, we need a function that maps the unbounded real line $(-\infty, \infty)$—the natural output of a linear model $\mathbf{w}^\top \mathbf{x} + b$—to a valid probability interval $(0, 1)$.
+
+### 3.1 Step 1: Probability ($p$)
+Let $p = P(y = 1 \mid \mathbf{x})$ be the probability that a loan applicant with features $\mathbf{x}$ is approved. By definition:
+
+$$p \in (0, 1)$$
+
+### 3.2 Step 2: Odds Ratio
+In probability theory and gambling, the **odds** of an event represent the ratio of the probability of success to the probability of failure:
+
+$$\text{Odds} = \frac{p}{1 - p}$$
+
+- If $p = 0.5$ (equal chance), $\text{Odds} = \frac{0.5}{0.5} = 1$ (1 to 1).
+- If $p = 0.8$ ($80\%$ approval rate), $\text{Odds} = \frac{0.8}{0.2} = 4$ (4 to 1 in favor).
+- If $p = 0.1$ ($10\%$ approval rate), $\text{Odds} = \frac{0.1}{0.9} = \frac{1}{9} \approx 0.11$.
+
+While $p$ is strictly bounded in $(0, 1)$, the Odds ratio spans the range $[0, \infty)$.
+
+### 3.3 Step 3: The Logit Function (Log-Odds)
+Taking the natural logarithm of the odds produces the **logit** function:
+
+$$\text{logit}(p) = \ln(\text{Odds}) = \ln\left(\frac{p}{1 - p}\right)$$
+
+As $p \to 0$, $\frac{p}{1-p} \to 0$, so $\ln\left(\frac{p}{1-p}\right) \to -\infty$.  
+As $p \to 1$, $\frac{p}{1-p} \to \infty$, so $\ln\left(\frac{p}{1-p}\right) \to +\infty$.
+
+The logit transformation successfully maps the bounded probability interval $(0, 1)$ across the entire continuous real line $(-\infty, +\infty)$!
+
+Because the logit is unbounded, we can now model it as a linear combination of input features:
+
+$$\ln\left(\frac{p}{1 - p}\right) = \mathbf{w}^\top \mathbf{x} + b = z$$
+
+> **The Core Hypothesis of Logistic Regression:**
+> Logistic regression assumes that the **log-odds** of the positive class are a linear function of the input features!
+
+---
+
+## 4. Inverting the Logit: Deriving the Sigmoid Curve
+
+To make predictions and compute probabilities, we invert the logit equation to solve for $p$ as a function of the linear score $z = \mathbf{w}^\top \mathbf{x} + b$:
+
+$$\ln\left(\frac{p}{1 - p}\right) = z$$
+
+Exponentiating both sides:
+
+$$\frac{p}{1 - p} = e^z$$
+
+Multiplying through by $(1 - p)$:
+
+$$p = e^z (1 - p) = e^z - p \cdot e^z$$
+
+Collecting all terms containing $p$ on the left side:
+
+$$p + p \cdot e^z = e^z \implies p(1 + e^z) = e^z$$
+
+Dividing both sides by $(1 + e^z)$:
+
+$$p = \frac{e^z}{1 + e^z}$$
+
+Finally, dividing both the numerator and denominator by $e^z$:
+
+$$p = \frac{1}{1 + e^{-z}} \equiv \sigma(z)$$
+
+This celebrated S-shaped curve $\sigma(z)$ is known as the **Logistic Sigmoid Function**.
+
+<div class="my-6 flex flex-col items-center">
+  <img 
+    src="/MeerKat-Notes/images/notebooks/mathematics-ml/03-logistic-regression/sigmoid_curve.png" 
+    alt="Logistic Sigmoid Function Curve" 
+    class="rounded-xl border border-slate-200 shadow-xs max-w-full h-auto"
+  />
+  <p class="text-xs text-slate-500 mt-2 text-center">
+    Figure: The S-shaped logistic sigmoid activation function squashing real scores $z \in (-\infty, +\infty)$ into calibrated probabilities $p \in [0, 1]$.
+  </p>
+</div>
+
+### 4.1 Key Mathematical Properties of the Sigmoid Function:
+1. **Range Bounds:** $\forall z \in \mathbb{R}, \; 0 < \sigma(z) < 1$.
+2. **Symmetry around origin:** $\sigma(-z) = 1 - \sigma(z)$.
+3. **Midpoint:** $\sigma(0) = \frac{1}{1 + e^0} = \frac{1}{2} = 0.5$.
+4. **Asymptotic Saturation:** $\lim_{z \to \infty} \sigma(z) = 1$ and $\lim_{z \to -\infty} \sigma(z) = 0$.
+
+### 4.2 The Elegant Sigmoid Derivative
+
+When training models via gradient descent, we must differentiate the sigmoid. Let $\sigma(z) = (1 + e^{-z})^{-1}$:
+
+$$\frac{d\sigma}{dz} = -1(1 + e^{-z})^{-2} \cdot (-e^{-z}) = \frac{e^{-z}}{(1 + e^{-z})^2}$$
+
+We split the fraction into two factors:
+
+$$\frac{d\sigma}{dz} = \left(\frac{1}{1 + e^{-z}}\right) \left(\frac{e^{-z}}{1 + e^{-z}}\right)$$
+
+Notice that:
+
+$$\frac{e^{-z}}{1 + e^{-z}} = \frac{1 + e^{-z} - 1}{1 + e^{-z}} = 1 - \frac{1}{1 + e^{-z}} = 1 - \sigma(z)$$
+
+Substituting back gives the identity:
+
+$$\frac{d\sigma}{dz} = \sigma(z) \cdot \big(1 - \sigma(z)\big)$$
+
+This beautiful property means computing the derivative requires no expensive transcendental operations during backpropagation—only a single subtraction and multiplication!
+
+---
+
+## 5. The Decision Boundary & Classification Rule
+
+Once our logistic model estimates the conditional probability:
+
+$$p = P(y = 1 \mid \mathbf{x}) = \sigma(\mathbf{w}^\top \mathbf{x} + b)$$
+
+we convert this continuous probability into a discrete class decision $\hat{y} \in \{0, 1\}$ using a decision threshold $\tau \in (0, 1)$ (typically $\tau = 0.5$):
+
+$$\hat{y} = \begin{cases} 1 & \text{if } P(y=1 \mid \mathbf{x}) \ge \tau \\ 0 & \text{if } P(y=1 \mid \mathbf{x}) < \tau \end{cases}$$
+
+For $\tau = 0.5$:
+
+$$\sigma(\mathbf{w}^\top \mathbf{x} + b) \ge 0.5 \iff \mathbf{w}^\top \mathbf{x} + b \ge 0$$
+
+The geometric boundary separating the two classes is the set of points where the model is completely undecided ($p = 0.5$):
+
+$$\mathbf{w}^\top \mathbf{x} + b = 0$$
+
+> **Crucial Insight:**
+> Even though the sigmoid function $\sigma(z)$ is non-linear, the decision boundary in feature space is a **flat linear hyperplane**! That is why logistic regression is classified as a **linear classifier**.
+
+In our loan approval example with a single feature $x_1$ (income):
+
+$$w_1 x_1 + b = 0 \implies x_{\text{threshold}} = -\frac{b}{w_1}$$
+
+If income exceeds $-\frac{b}{w_1}$, the loan is approved; otherwise, it is rejected.
+
+---
+
+## 6. The Cost Function: Maximum Likelihood & Binary Cross-Entropy
+
+In linear regression, we minimised the Mean Squared Error (MSE). Why can't we use MSE for logistic regression?
+
+$$J_{\text{MSE}}(\mathbf{w}, b) = \frac{1}{2m} \sum_{i=1}^{m} \left( \sigma(\mathbf{w}^\top \mathbf{x}^{(i)} + b) - y^{(i)} \right)^2$$
+
+Because $\sigma(z)$ is a non-linear, saturating function, $J_{\text{MSE}}$ is **non-convex** with respect to $\mathbf{w}$ and $b$. It possesses numerous local minima and vast flat plateaus where gradients vanish, causing standard gradient descent to get permanently trapped in bad suboptimal solutions.
+
+### 6.1 Deriving Binary Cross-Entropy from Maximum Likelihood Estimation (MLE)
+
+Since $y \in \{0, 1\}$, we can model the conditional outcome $y^{(i)}$ as an independent **Bernoulli random variable** with parameter $p^{(i)} = \sigma(\mathbf{w}^\top \mathbf{x}^{(i)} + b)$:
+
+$$P(y^{(i)} \mid \mathbf{x}^{(i)}) = \begin{cases} p^{(i)} & \text{if } y^{(i)} = 1 \\ 1 - p^{(i)} & \text{if } y^{(i)} = 0 \end{cases}$$
+
+We write this compactly as a single unified expression:
+
+$$P(y^{(i)} \mid \mathbf{x}^{(i)}) = (p^{(i)})^{y^{(i)}} (1 - p^{(i)})^{1 - y^{(i)}}$$
+
+Assuming the $m$ training observations are independently and identically distributed (i.i.d.), the total likelihood of parameters $\mathbf{w}$ and $b$ is the product of individual probabilities:
+
+$$L(\mathbf{w}, b) = \prod_{i=1}^{m} (p^{(i)})^{y^{(i)}} (1 - p^{(i)})^{1 - y^{(i)}}$$
+
+To prevent numerical underflow and turn products into sums, we take the natural logarithm to obtain the **log-likelihood**:
+
+$$\ell(\mathbf{w}, b) = \ln L(\mathbf{w}, b) = \sum_{i=1}^{m} \left[ y^{(i)} \ln(p^{(i)}) + (1 - y^{(i)}) \ln(1 - p^{(i)}) \right]$$
+
+In optimisation and machine learning, by convention we minimise a loss rather than maximise a score. Negating the log-likelihood and scaling by $\frac{1}{m}$ yields the **Binary Cross-Entropy (BCE)** cost function:
+
+$$J(\mathbf{w}, b) = -\frac{1}{m} \sum_{i=1}^{m} \left[ y^{(i)} \ln(p^{(i)}) + (1 - y^{(i)}) \ln(1 - p^{(i)}) \right]$$
+
+### 6.2 Intuition Behind Binary Cross-Entropy:
+- **Case $y = 1$:** The second term vanishes, leaving $-\ln(p)$.
+  - If $p \to 1$ (correct prediction), $-\ln(1) = 0$ (zero loss).
+  - If $p \to 0$ (confident wrong prediction), $-\ln(p) \to \infty$ (infinite penalty).
+- **Case $y = 0$:** The first term vanishes, leaving $-\ln(1 - p)$.
+  - If $p \to 0$ (correct prediction), $-\ln(1) = 0$ (zero loss).
+  - If $p \to 1$ (confident wrong prediction), $-\ln(1 - p) \to \infty$ (infinite penalty).
+
+Most importantly, the Binary Cross-Entropy function is **strictly convex** with respect to $\mathbf{w}$ and $b$. It possesses a unique global minimum and zero local minima!
+
+---
+
+## 7. Optimization: Loss Landscape & Convergence
+
+Because the logistic model wraps parameters inside the non-linear sigmoid function, there is no closed-form analytical solution like the OLS normal equation $\hat{\mathbf{w}} = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y}$. Parameters must be learned iteratively using **Gradient Descent**:
+
+$$\mathbf{w} \leftarrow \mathbf{w} - \alpha \nabla_{\mathbf{w}} J, \quad b \leftarrow b - \alpha \frac{\partial J}{\partial b}$$
+
+The plot below demonstrates why choosing Binary Cross-Entropy (BCE) over Mean Squared Error (MSE) is crucial for gradient-based optimisation in classification:
+
+<div class="my-6 flex flex-col items-center">
+  <img 
+    src="/MeerKat-Notes/images/notebooks/mathematics-ml/03-logistic-regression/bce_vs_mse_loss.png" 
+    alt="Loss Landscape Comparison: Binary Cross-Entropy vs Mean Squared Error" 
+    class="rounded-xl border border-slate-200 shadow-xs max-w-full h-auto"
+  />
+  <p class="text-xs text-slate-500 mt-2 text-center">
+    Figure: Loss curve comparison. Notice how MSE suffers from flat plateaus with near-zero gradients when predictions are severely incorrect, whereas BCE provides steep, continuous gradients toward the minimum.
+  </p>
+</div>
+
+### Key Takeaways on Optimization:
+1. **Vanishing Gradient with MSE:** If a model makes a confident wrong prediction (e.g. $p \to 0$ when $y = 1$), the derivative $\sigma'(z) \to 0$, producing a plateau where learning stops dead in its tracks.
+2. **Steep Slope with BCE:** Under Binary Cross-Entropy, the penalty grows asymptotically towards infinity as predictions diverge from reality, guaranteeing strong gradient updates that rapidly pull the weights back on track.
+
+---
+
+<FunFact title="Fun Fact: The Poison of Linear Separability">
+
+In most machine learning problems, having clean, easily separable data is a dream come true. But for vanilla unregularised Logistic Regression, **perfect linear separation is a nightmare!**
+
+If your data can be cleanly split by a straight line with 100% training accuracy (for example, every loan applicant with income $> 50\text{k}$ was approved, and every applicant $\le 50\text{k}$ was rejected), the Maximum Likelihood estimator does not exist: the weights will explode to **positive and negative infinity** ($\|\mathbf{w}\| \to \infty$)!
+
+Why? Because the cost function $J(\mathbf{w})$ only reaches its theoretical infimum (loss = $0$) when $\sigma(z) \to 1$ and $\sigma(z) \to 0$, which requires $z \to \pm\infty$. Gradient descent will keep cranking up the magnitude of $\mathbf{w}$ indefinitely, causing floating-point overflow and turning the smooth sigmoid into a rigid step function.
+
+The cure? The exact regularisation techniques we learned in **[Chapter 2: Ridge & Lasso](/notebooks/mathematics-ml/02-ridge-lasso)**! Adding an $L_2$ penalty $\frac{\lambda}{2}\|\mathbf{w}\|_2^2$ halts weight explosion and guarantees a stable, well-calibrated solution.
+
+</FunFact>
+
+---
+
+## 8. Python Implementation from Scratch
+
+Here is a complete, production-grade implementation of Logistic Regression with binary cross-entropy loss, gradient descent, and $L_2$ regularisation using only NumPy:
+
+<CodeExample title="logistic_regression.py" language="python">
+
+```python
+import numpy as np
+
+class LogisticRegression:
+    """
+    Binary Logistic Regression from scratch using Gradient Descent.
+    
+    Parameters:
+    -----------
+    learning_rate : float
+        Step size alpha for parameter updates.
+    n_iterations : int
+        Number of gradient descent iterations.
+    regularization : float (lambda)
+        L2 regularization parameter to prevent exploding weights.
+    threshold : float
+        Decision boundary probability cutoff (default 0.5).
+    """
+    def __init__(
+        self, 
+        learning_rate: float = 0.05, 
+        n_iterations: int = 2000, 
+        regularization: float = 0.01,
+        threshold: float = 0.5
+    ):
+        self.learning_rate = float(learning_rate)
+        self.n_iterations = int(n_iterations)
+        self.regularization = float(regularization)
+        self.threshold = float(threshold)
+        self.weights = None
+        self.bias = 0.0
+        self.loss_history = []
+
+    @staticmethod
+    def _sigmoid(z: np.ndarray) -> np.ndarray:
+        """Numerically stable sigmoid function."""
+        # Clip z to prevent float64 overflow in exp(-z)
+        z_safe = np.clip(z, -30.0, 30.0)
+        return 1.0 / (1.0 + np.exp(-z_safe))
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        """Fit model to training features X and binary targets y."""
+        m_samples, n_features = X.shape
+        self.weights = np.zeros(n_features)
+        self.bias = 0.0
+        self.loss_history = []
+
+        for iteration in range(self.n_iterations):
+            # 1. Forward pass: compute linear combination and sigmoid activation
+            linear_model = np.dot(X, self.weights) + self.bias
+            y_pred_prob = self._sigmoid(linear_model)
+
+            # 2. Binary Cross-Entropy loss with L2 regularization
+            eps = 1e-15  # Prevent log(0)
+            p_clipped = np.clip(y_pred_prob, eps, 1.0 - eps)
+            bce_loss = - (1.0 / m_samples) * np.sum(
+                y * np.log(p_clipped) + (1.0 - y) * np.log(1.0 - p_clipped)
+            )
+            l2_penalty = (self.regularization / (2.0 * m_samples)) * np.sum(self.weights ** 2)
+            self.loss_history.append(bce_loss + l2_penalty)
+
+            # 3. Compute gradients
+            error = y_pred_prob - y
+            dw = (1.0 / m_samples) * np.dot(X.T, error) + (self.regularization / m_samples) * self.weights
+            db = (1.0 / m_samples) * np.sum(error)
+
+            # 4. Parameter updates
+            self.weights -= self.learning_rate * dw
+            self.bias -= self.learning_rate * db
+
+        return self
+
+    def predict_proba(self, X: np.ndarray) -> np.ndarray:
+        """Estimate positive class probability P(y=1 | X)."""
+        linear_model = np.dot(X, self.weights) + self.bias
+        return self._sigmoid(linear_model)
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict binary discrete labels {0, 1}."""
+        probabilities = self.predict_proba(X)
+        return (probabilities >= self.threshold).astype(int)
+
+
+# --- Demonstration: Loan Approval based on Income ---
+if __name__ == "__main__":
+    # Annual income in $k/yr
+    incomes = np.array([15, 22, 28, 35, 40, 45, 48, 52, 55, 62, 70, 80, 95, 110]).reshape(-1, 1)
+    # 0 = Rejected, 1 = Approved
+    approved = np.array([0,  0,  0,  0,  0,  0,  1,  0,  1,  1,  1,  1,  1,   1])
+
+    # Standardize input feature (income) for smooth gradient descent
+    x_mean = np.mean(incomes)
+    x_std = np.std(incomes)
+    incomes_scaled = (incomes - x_mean) / x_std
+
+    model = LogisticRegression(learning_rate=0.1, n_iterations=1500)
+    model.fit(incomes_scaled, approved)
+
+    # Test applicant with $50k income
+    test_applicant = np.array([[50]])
+    test_scaled = (test_applicant - x_mean) / x_std
+    prob = model.predict_proba(test_scaled)[0]
+    decision = model.predict(test_scaled)[0]
+
+    print(f"Applicant ($50,000 income):")
+    print(f"Approval Probability: {prob * 100:.2f}%")
+    print(f"Final Decision: {'APPROVED' if decision == 1 else 'REJECTED'}")
+```
+
+</CodeExample>
+
+---
+
+## 9. Summary: Linear Regression vs Logistic Regression
+
+| Property | Linear Regression (OLS) | Logistic Regression |
+|---|---|---|
+| **Problem Type** | Continuous Regression | Binary / Multiclass Classification |
+| **Target Output ($y$)** | Real numbers ($y \in \mathbb{R}$) | Discrete labels ($y \in \{0, 1\}$) |
+| **Model Hypothesis** | $\hat{y} = \mathbf{w}^\top \mathbf{x} + b$ | $p = \sigma(\mathbf{w}^\top \mathbf{x} + b) = \frac{1}{1 + e^{-(\mathbf{w}^\top \mathbf{x} + b)}}$ |
+| **Output Bounds** | Unbounded $(-\infty, +\infty)$ | Strict probabilities $[0, 1]$ |
+| **Cost Function** | Mean Squared Error (MSE) | Binary Cross-Entropy (Negative Log-Likelihood) |
+| **Cost Convexity** | Strictly convex quadratic | Strictly convex with respect to $\mathbf{w}, b$ |
+| **Analytical Solution** | Closed-form $\hat{\mathbf{w}} = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y}$ | No closed-form; requires iterative Gradient Descent |
+| **Outlier Robustness** | Distant points violently distort fit | Distant correct points saturate sigmoid harmlessly |
+
+---
+
+## 10. Checkpoint Exercises
+
+<CheckpointExercises client:visible />
