@@ -8,6 +8,7 @@
   "tags": [],
   "chapters": [
     "01-linear-regression",
-    "02-ridge-lasso"
+    "02-ridge-lasso",
+    "03-logistic-regression"
   ]
 }
